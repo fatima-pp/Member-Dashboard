@@ -137,8 +137,8 @@ class BDF_model extends CI_Model{
 
 
 
-    public function authenticate($user_id = '',$password = '',$id_type = 'email'){
-        $auth_qry = $this->db->get_where('customers c',array($id_type=>$user_id,'password'=>md5($password)));
+    public function authenticate($user_id = '',$password = '',$id_type = 'email',$id = ''){
+        $auth_qry = $this->db->get_where('customers c',array('id' =>$id, $id_type=>$user_id,'password'=>md5($password)));
         return $auth_qry->row_array();       
     }
 
@@ -173,6 +173,233 @@ class BDF_model extends CI_Model{
         $acc_qry = $this->db->get_where('account',array('id'=>$account_id,'active'=>1));
         return $acc_qry;
     }
+
+    public function get_membership_types($renewal_types = []){
+        $mem_qry = $this->db->select('*')->from('membership_types mt')->where_in('mt.id',$renewal_types)->get();
+        return $mem_qry->result_array();
+    }
+
+    public function get_current_membership($account_id = ''){
+        $mem_qry = $this->db->select('*,p.name as parking_name,p.id as parking_id,ps.id as parkspace_id,ps.name as parkspace_name,p.annual_rent as annual_rent')
+        ->from('reserved_space rs')
+        ->join('park_space ps','rs.parkspace_id = ps.id','left')
+        ->join('parking p','p.id = ps.Parking_id','left')
+        ->join('accounts_membership_types amt','amt.account_id = rs.account_id','left')
+        ->join('membership_types mt','amt.membership_type_id = mt.id','left')
+        ->where('rs.account_id',$account_id)
+        ->get();
+        return $mem_qry->row_array();
+    }
+
+    public function get_upgraded_membership($current_park = 0,$annual_rent = 0){
+        $active = 1 ;
+        $location_id =  19;//bdf
+        
+        $upg_qry = $this->db->select("*,p.name as parking_name,p.id as parking_id,SUM(CASE WHEN status = 1 AND vacant LIKE '%free%' THEN 1 ELSE 0 END) AS capacity")
+        ->from('parking p')
+        ->join('park_space ps','ps.Parking_id = p.id')
+        ->where("p.annual_rent >=", $annual_rent)
+        ->where("p.active", $active)
+        ->where("p.id !=", $current_park)
+        ->where("location_id = $location_id ")
+        ->group_by("p.id")
+        ->get();
+        return $upg_qry->result_array();
+    }
+
+
+    // existing functions from BDFModel
+    public function get_upgraded_parkings($id = 0) {
+		
+		$query 					= $this->db->get_where('parking',array('id'=>$id));
+		$current_parking 		= $query->row_array();
+		$current_parking_rent 	= $current_parking['annual_rent'];
+		$location_id =  19;//bdf
+
+        
+		$this->db->select("parking.*,SUM(CASE WHEN status = 1 AND vacant LIKE '%free%' THEN 1 ELSE 0 END) AS capacity");
+		$this->db->from('parking');
+		$this->db->join('park_space ps','ps.Parking_id = parking.id');
+		$this->db->where("annual_rent >= $current_parking_rent ");
+		$this->db->where("location_id = $location_id ");
+		$this->db->where("parking.active",1);
+		$this->db->group_by("parking.id ");
+		$result = $this->db->get();
+
+       return $result;
+	}
+
+
+    public function getFreeParkSpots($id = 0) {
+        $result = $this->db->select('ps.*,p.annual_rent,p.name as parking_name')->from('park_space ps')->join('parking p','p.id = ps.Parking_id')->where(array('ps.Parking_id' => $id, 'ps.status' => '1', 'ps.vacant' => 'free','p.active'=>1))->get();
+        return $result;
+	}
+
+    public function get_dscnt_dtls($account_id = ''){
+        $active = 1;
+        $this->db->select("
+            park_space.*,park_space.id as ps_id,
+            parking.name AS parking_lot,
+            parking.annual_rent,
+            reserved_space.account_id,
+            customers.*,
+            account.*,organization.*,
+            annualDiscount.discount,
+            account_cars.*,subs_transactions.*,amt.membership_type_id,mt.*,
+
+            (CASE WHEN renew_discount != 0 AND account.`years_active` != 0 THEN ((annual_rent) - (amount)) 
+                WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_amount_received,
+            
+            (CASE WHEN renew_discount != 0 AND account.`years_active` != 0 THEN  (((annual_rent) - (amount))/(annual_rent))*100 
+                WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_percentage_received,
+
+            (CASE WHEN renew_discount != 0  AND account.`years_active` != 0 THEN (amount - (amount * discount))
+                WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_amount,
+                
+            (CASE WHEN renew_discount != 0 AND account.`years_active` != 0 THEN  (((annual_rent) - (amount))/(annual_rent))*100 
+                WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_percentage
+        ");
+
+        $this->db->from('park_space');
+        $this->db->join('reserved_space', 'reserved_space.`parkspace_id` = park_space.`id`', 'inner');
+        $this->db->join('customers', 'customers.id = reserved_space.`account_id`', 'inner');
+        $this->db->join('account', 'account.id = customers.id', 'inner');
+        $this->db->join('parking', 'parking.id = park_space.`Parking_id`', 'inner');
+        $this->db->join('annualDiscount', 'parking.id = annualDiscount.`parking_id`', 'inner');
+        $this->db->join('account_cars', 'account_cars.account_id = account.id', 'left');
+        $this->db->join('organization', 'organization.customers_id = account.id', 'left');
+        $this->db->join('subs_transactions', 'subs_transactions.customers_id = account.id', 'inner');
+        
+        $this->db->join('accounts_membership_types amt', 'amt.account_id = customers.id', 'left');
+        $this->db->join('membership_types mt', 'mt.id = amt.membership_type_id', 'left');
+    
+        $this->db->where('customers.id', $account_id);
+        $this->db->where('amt.active', $active);
+        // $this->db->where('park_space.parking_id', $parkingLot);
+        // $this->db->where('park_space.name', $parkingSpace);
+        $this->db->order_by('reserved_space.id','DESC');
+        $query = $this->db->get();
+        return $query->row_array();
+    }
+
+    public function get_location_name($location_id = 0){
+		$query = $this->db->select('*')->from('location')->where(array('Active'=>1,'id'=>$location_id))->get();
+		return $query->row_array();
+	}
+
+    public function getParkingName($parking_id = ""){
+		if(isset($parking_id) && $parking_id != null){
+			$query = $this->db->get_where('parking',array('id'=>$parking_id));
+			return $query->row_array(); 
+		}
+	}
+
+    public function getParkingLotNameAndParkingSpaceName($parkingSpace) {
+		$this->db->select('park_space.name AS park_name, parking.`name`');
+		$this->db->from('park_space');
+		$this->db->join('parking', 'parking.id = park_space.parking_id', 'inner');
+		$this->db->where('park_space.id', $parkingSpace);
+		$result = $this->db->get();
+		return $result->result();
+	}
+
+    public function generateInvoiceNumber($location_id = 19) {
+		if($location_id == 19){
+			return $this->db->select('id')->from('subs_transactions')->order_by('id', 'DESC')->limit(1)->get();
+		}
+		else if($location_id != 19) {
+			return $this->db->select('invoice_id as id')->from('membership_transactions')->order_by('invoice_id', 'DESC')->limit(1)->get();
+		}
+		else{
+			return 0;
+		}
+	}
+
+    public function getCustomerInformation($id = ''){
+		if($id != null && $id != ''){
+			$query = $this->db->get_where('customers',array('id'=>$id));
+			return $query->row_array();
+		}
+		return false;
+	}
+
+    
+    public function getReceiptInfo($id,$status = null) {
+		if (strpos($id, 'BDF') !== false) {
+			$this->db->select('customers.first_name,
+			customers.last_name,
+			customers.CPR,
+			customers.id,
+			customers.mobile_number,
+			organization.organization,
+			organization.department,
+			organization.profession,
+			subs_transactions.amount,
+			subs_transactions.invoice_date,
+			subs_transactions.payment_mode,
+			subs_transactions.`id` AS invoice_number,
+			account.create_date,
+			account.expiry_date,
+			account_cars.car_plate_number');
+		}
+		else{
+			$this->db->select('customers.first_name,
+			customers.last_name,
+			customers.CPR,
+			customers.id,
+			customers.mobile_number,
+			organization.organization,
+			organization.department,
+			organization.profession,
+			membership_transactions.amount,
+			membership_transactions.invoice_date,
+			membership_transactions.payment_mode,
+			membership_transactions.`invoice_id` AS invoice_number,
+			account.create_date,
+			account.expiry_date,
+			account_cars.car_plate_number');
+		}
+
+		$this->db->from('customers');
+		$this->db->join('account', 'account.customers_id = customers.id ', 'INNER');
+		$this->db->join('organization', 'organization.customers_id = customers.id', 'INNER');
+		
+		if (strpos($id, 'BDF') !== false) {
+			$this->db->join('subs_transactions', 'subs_transactions.customers_id = customers.id', 'INNER');
+			if($status != null){
+				$this->db->where("subs_transactions.status LIKE '%$status'");
+			}
+		}
+		else{
+			$this->db->join('membership_transactions', 'membership_transactions.account_id = customers.id', 'INNER');
+			if($status != null){
+				$this->db->where("membership_transactions.status LIKE '%$status'");
+			}
+		}
+
+		$this->db->join('account_cars', 'account_cars.account_id = customers.id', 'INNER');
+		$this->db->where('customers.id', $id);
+		$this->db->order_by('membership_transactions.invoice_id', 'DESC');
+		
+
+		return $this->db->get();
+	}
+
+    public function getReceiptPark($id,$location_id) {
+		$this->db->select("parking.name,
+		park_space.name AS park_name");
+		$this->db->from('location');
+		$this->db->join('parking', 'parking.location_id = location.id', 'INNER');
+		$this->db->join('park_space', 'park_space.Parking_id = parking.id', 'INNER');
+		$this->db->join('reserved_space', 'reserved_space.parkspace_id = park_space.id', 'INNER');
+		$this->db->where('location.id', $location_id);
+		$this->db->where('reserved_space.account_id', $id);
+
+		return $this->db->get();
+	}
+
+
+
 
 
 

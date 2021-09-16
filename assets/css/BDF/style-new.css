@@ -63,8 +63,70 @@
 .btn a {
 	font-size: var(--mob-mini-link-size);
 }
+.btn.renew-btn a {
+	font-size: 0.75rem !important;
+	font-weight: 600;
+}
+.btn.renew-btn.prm-btn-peach:hover {
+	color: var(--white) !important;
+	background-color: var(--peach) !important;
+}
+.btn.renew-btn.ghost-btn-peach:hover {
+	color: var(--peach) !important;
+	background-color: var(--white) !important;
+}
 
-body {height: fit-content;max-height: fit-content;}
+.main-body-holder.renew {
+	width: 100vw !important;
+}
+
+.row.ttl_row h6 {
+	font-size: 1.25rem !important;
+	font-weight: 600;
+}
+.btn.renew-btn {
+	width: 5rem;
+	height: 2.5rem;
+	border-radius: 55px !important;
+	margin-top: 0 !important;
+	font-family: "Montserrat", sans-serif !important;
+	font-weight: 600;
+	font-size: 0.75rem;
+}
+.container.renew {
+	padding: 0;
+}
+
+.parking-box {
+	margin-bottom: 1.25rem !important;
+}
+#renewForm > div > ul > li > a {
+	font-size: 0.5rem;
+}
+#renewForm > div > ul > li > a > i {
+	font-size: 1.5rem;
+}
+
+#personalInfo {
+	padding: 0 0.25rem;
+}
+
+.renewal-info .row {
+	margin-bottom: 0 !important;
+}
+
+.renewal-info {
+	margin-bottom: 1rem !important;
+}
+
+.form-headers + hr {
+	margin-bottom: 1rem;
+}
+
+body {
+	height: fit-content;
+	max-height: fit-content;
+}
 
 .main-heading h1 {
 	font-weight: var(--dsktp-main-heading-weight);
@@ -478,6 +540,27 @@ button.ghost-btn > a {
 	padding: 0 2rem;
 }
 
+.main-body-holder.form {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 0 2rem;
+}
+
+.tabs {
+	margin: 0 !important;
+	overflow-x: hidden !important;
+}
+
+.form-headers li.tab > a {
+	text-transform: initial !important;
+	font-size: 1rem !important;
+}
+
+.form-headers li.tab > a.active {
+	font-weight: 600 !important;
+}
+
 /* below IphoneX until 320px */
 @media screen and (max-width: 374px) {
 	.prm-btn,
@@ -488,6 +571,10 @@ button.ghost-btn > a {
 
 	a {
 		font-size: var(--mob-mini-link-size);
+	}
+
+	.form-headers li.tab > a > i {
+		margin-right: 0.35rem !important;
 	}
 }
 
@@ -561,6 +648,14 @@ button.ghost-btn > a {
 	.logo-holder img {
 		content: url("https://park-pass.com/src/new-images/parkpass-black.svg");
 	}
+
+	#renewForm > div > ul > li > a {
+		font-size: 1rem;
+	}
+
+	.form-headers li.tab > a > i {
+		margin-right: 1rem !important;
+	}
 }
 
 @media screen and (min-width: 1024px) {
@@ -571,6 +666,12 @@ button.ghost-btn > a {
 		align-items: center;
 	}
 
+	.container.renew {
+		margin: 0 1rem !important;
+		width: auto;
+		align-items: flex-start;
+	}
+
 	.main-body-holder {
 		display: flex;
 		padding-top: 1rem;
@@ -578,6 +679,10 @@ button.ghost-btn > a {
 		flex-direction: row;
 		padding: 0;
 		align-items: inherit;
+	}
+
+	.main-body-holder.renew {
+		justify-content: flex-start !important;
 	}
 
 	.logo-holder {
@@ -718,14 +823,14 @@ button.ghost-btn > a {
 		/* height: 100vh; */
 		padding: 5.5rem 0 1rem 0;
 		background-color: rgb(5 65 104 / 5%);
-		color: var(--blue);
+		color: var(--black);
 		/* margin-top: 6.75rem; */
 	}
 
 	.sidebar-items-list li {
 		display: flex;
 		/* justify-content: space-between; */
-		margin-bottom: 2rem;
+		margin-bottom: 1rem;
 		gap: 1rem;
 		padding: 0.75rem 0.75rem 0.75rem 5.5rem;
 		align-items: center;
@@ -747,13 +852,44 @@ button.ghost-btn > a {
 		width: 100%;
 		max-width: 93%;
 	}
+
+	.renewal-info,
+	.renewal-sel {
+		width: 100%;
+	}
+
+	#renewForm > div > ul > li > a {
+		font-size: 0.75rem;
+	}
+
+	.header-form-section {
+		width: -webkit-fill-available;
+	}
 }
+
+@media screen and (min-width: 1024px) and (max-width: 1440px) {
+	#parkingInfo,
+	#payment_summ {
+		width: -webkit-fill-available;
+	}
+
+	.form-headers + hr {
+		width: 100%;
+	}
+}
+
 @media screen and (min-width: 1440px) {
 	.container {
 		margin: 0 auto;
 		padding-top: 0.5rem;
 		padding-bottom: 0.5rem;
 		align-items: center;
+	}
+
+	.container.renew {
+		margin: 0 1rem !important;
+		width: auto;
+		align-items: flex-start;
 	}
 
 	.main-body-holder {
@@ -763,6 +899,10 @@ button.ghost-btn > a {
 		flex-direction: row;
 		padding: 0;
 		align-items: inherit;
+	}
+
+	.main-body-holder.renew {
+		justify-content: flex-start;
 	}
 
 	.logo-holder {
@@ -903,14 +1043,14 @@ button.ghost-btn > a {
 		/* height: 100vh; */
 		padding: 5.5rem 0 1rem 0;
 		background-color: rgb(5 65 104 / 5%);
-		color: var(--blue);
+		color: var(--black);
 		/* margin-top: 6.75rem; */
 	}
 
 	.sidebar-items-list li {
 		display: flex;
 		/* justify-content: space-between; */
-		margin-bottom: 2rem;
+		margin-bottom: 1rem;
 		gap: 1rem;
 		padding: 0.75rem 0.75rem 0.75rem 5.5rem;
 		align-items: center;
@@ -932,4 +1072,54 @@ button.ghost-btn > a {
 		width: 100%;
 		max-width: 75%;
 	}
+
+	.btn.renew-btn {
+		width: 6.5rem;
+		height: 3rem;
+		border-radius: 55px !important;
+	}
+
+	.renewal-info {
+		margin-bottom: 1rem !important;
+	}
+
+	.ren_val {
+		font-weight: 600 !important;
+	}
+
+	.form-headers {
+		overflow-x: hidden !important;
+	}
+
+	.renewal-header {
+		margin-bottom: 0 !important;
+	}
+}
+
+.renewal-header {
+	font-weight: 600 !important;
+}
+
+.card-holder {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+	position: relative;
+}
+
+.card-holder input[type="radio"] {
+	opacity: 1;
+	top: 50%;
+	cursor: pointer;
+}
+
+.card-holder label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-left: 2rem !important;
+	font-size: 1rem;
+	color: #000;
+	font-weight: 600;
 }

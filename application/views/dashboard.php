@@ -1,4 +1,6 @@
-<?php include('header-new.php'); ?>         
+<?php include('header-new.php'); ?>   
+ <div class="main-body-holder">
+
 <?php include('sidebar.php'); ?>         
 
                 <section class="sign_in_form mem_dashboard">
@@ -174,6 +176,6 @@
 
             </div>
 
-            <?php include('footer-dashboard.php'); ?>
             <?php include('footer.php'); ?>
+            <?php include('footer-dashboard.php'); ?>
         

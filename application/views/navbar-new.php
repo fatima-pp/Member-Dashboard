@@ -1,36 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">   
-    
-    <!-- font awesome -->    
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
-    
-    <!--Import Google Icon Font-->    
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <!-- Compiled and minified CSS -->
-    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
-    
-    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
-
-    
-    <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/BDF/style-header.css'); ?>">
-    <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/BDF/style-new.css'); ?>">
-
-
-    <title>ParkPass</title>
-   
-</head>
 <body>    
 
   <!-- navbar -->
         <nav class="nav-wrapper-1 white z-depth-0"> 
-            <div class="nav-container">
+            <div class="nav-container container-1">
 
                 <ul id="dropdown1" class="dropdown-content memberships-dropdown">
                     <li><a href="<?php echo base_url('buyPackage'); ?>">Valet Membership</a></li>
@@ -45,7 +18,13 @@
 
                 <ul class="hide-on-med-and-down mid-nav-list">
                     <li><a href="<?php echo base_url('page_under_const'); ?>">Booking</a></li>
-                    <li><a class="dropdown-trigger" href="#!" data-target="dropdown1">Memberships<i class="material-icons right">arrow_drop_down</i></a></li>
+                    
+                    <li>
+                        <a class="dropdown-trigger" href="#!" data-target="dropdown1">
+                            Memberships<i class="material-icons right">arrow_drop_down</i>
+                        </a>
+                    </li>
+
                     <li><a href="<?php echo base_url('page_under_const'); ?>">Locations</a></li>
                     <li><a href="<?php echo base_url('page_under_const'); ?>">About</a></li>                   
                 </ul>

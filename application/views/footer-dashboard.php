@@ -23,30 +23,8 @@
                     }
                 );
 
-
-                $('.materialboxed').materialbox();
-                $('.parallax').parallax();
-                $('.tabs').tabs();
-                $('.datepicker').datepicker({
-                    disableWeekends:true
-                });
-                $('.tooltipped').tooltip();
-                $('.scrollspy').scrollSpy();
                 $('select').formSelect();
 
-                var elem = document.querySelector('.tabs');
-                var options = {}
-                var instance = M.Tabs.init(elem, options);
-
-
-                // $(".sidenav-trigger").hover(
-                //     function() {  
-                //         sidebar_inst.open();
-                //     },
-                //     setTimeout(()=>{
-                //         sidebar_inst.close();
-                //     },1000)
-                // );
 
             });
             </script>

@@ -1,6 +1,6 @@
 body {
 	margin: 0 !important;
-	font-family: "Montserrat", sans-serif;
+	font-family: "Montserrat", sans-serif !important;
 }
 
 .dashboard-container {
@@ -9,11 +9,37 @@ body {
 
 div.col h6 {
 	/* .row h6 { */
-	font-size: 1.375rem !important;
+	/* font-size: 1.375rem !important; */
 }
 
 .row {
-	margin-bottom: 2rem !important;
+	margin-bottom: 1rem !important;
+	margin-top: 0.5rem !important;
+}
+
+.container.renew > .row {
+	margin-left: 0;
+	margin-right: 0;
+	width: 100%;
+}
+
+.renew-form-headers,
+.renew-form-headers + hr {
+	width: 61%;
+}
+
+.renew-form-headers > li.tab {
+	width: 50% !important;
+}
+
+.form-tab .input-field select {
+	font-family: "Montserrat", sans-serif !important;
+	border: none;
+	border-bottom: 1px solid var(--black);
+}
+
+.form-tab .row .col {
+	margin-left: inherit !important;
 }
 
 .material-icons.small {
@@ -265,8 +291,16 @@ nav .sidenav-trigger {
 		align-items: center;
 		justify-content: space-between;
 		width: -webkit-fill-available;
-		margin: 2rem 3.5rem 2rem 5.5rem !important;
+		margin: 2rem 3.5rem 0.5rem 5.5rem !important;
 		max-width: 100vw;
+	}
+
+	#parkingInfo .renewal-sel .input-field:nth-child(1) {
+		margin-top: 0.75rem;
+	}
+	#parkingInfo .renewal-sel .input-field {
+		margin-bottom: 0.5rem;
+		margin-top: 0.25rem;
 	}
 }
 
@@ -491,7 +525,8 @@ h6.package-feature {
 
 .form-section {
 	display: flex !important;
-	justify-content: space-evenly !important;
+	justify-content: flex-start !important;
+	/* space-around */
 	align-items: center !important;
 }
 
@@ -510,6 +545,7 @@ h6.package-feature {
 
 .form-headers {
 	display: flex !important;
+	/* justify-content: space-between; */
 }
 
 .border-btn {
@@ -531,15 +567,24 @@ h6.package-feature {
 	padding: 0 !important;
 }
 
-.lifestyle-box {
+.parking-box {
 	border: 1px solid black !important;
 	border-radius: 19px !important;
 	padding: 25px 20px 65px 20px !important;
 }
 
 @media screen and (min-width: 1024px) {
-	.lifestyle-box {
+	.parking-box {
 		margin-top: 150px;
+	}
+
+	.renew-form-headers,
+	.renew-form-headers + hr {
+		/* width: 100%; */
+	}
+
+	.renew-form-headers > li.tab {
+		width: 100% !important;
 	}
 }
 
@@ -569,7 +614,7 @@ h6.package-feature {
 }
 
 hr {
-	background-color: brown !important;
+	background-color: var(--black) !important;
 }
 
 .parkpass-white-logo {
@@ -730,6 +775,21 @@ nav ul.right {
 	gap: 1rem;
 }
 
+.renewal-info h6 {
+	font-size: 1rem !important;
+}
+
+.ren_val {
+	text-align: right !important;
+}
+
+.ren_val#parking_charges {
+	text-decoration: line-through;
+}
+
+.row.ttl_row h6 {
+	font-size: 1.5rem !important;
+}
 /* .input-field:active input {
 	border-bottom: 1px solid #adadad !important;
 	box-shadow: 0 1px 0 0 #adadad !important;

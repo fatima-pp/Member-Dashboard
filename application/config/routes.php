@@ -79,3 +79,5 @@ $route['create_account']              = 'BDF/create_account';
 $route['verify_email/(:any)']         = 'BDF/verify_email/$1';  
 
 $route['renew/(:any)']                = 'BDF/renew/$1';  
+$route['get_vacant_parks']            = 'BDF/getVacantParks';  
+$route['reviewMembershipDetails']     = 'BDF/reviewBDFOrder';

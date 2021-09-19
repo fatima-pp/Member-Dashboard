@@ -563,7 +563,7 @@ class BDF extends CI_Controller{
             $this->form_validation->set_rules('email','Email','required',array('required'=>'Please enter your email address'));
 
             //verify and validate password and confirm password
-            $this->form_validation->set_rules('password','Password','required|exact_length[6]|regex_match[/^(?=.+\w)(?=.*[@#$%^&+=_]).{6}$/]',array('required'=>'Please enter your new password','exact_length'=>'Password must be 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one character(@#$%^&+=_)'));
+            $this->form_validation->set_rules('password','Password','required|min_length[6]|regex_match[/^(?=.+\w)(?=.*[@#$%^&+=_]).{6}$/]',array('required'=>'Please enter your new password','exact_length'=>'Password must be 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one character(@#$%^&+=_)'));
             $this->form_validation->set_rules('confirm_password','Confirm Password','required|matches[password]',array('matches'=>'Passwords do not match'));
 
             if($this->form_validation->run() === FALSE){

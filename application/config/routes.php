@@ -81,3 +81,8 @@ $route['verify_email/(:any)']         = 'BDF/verify_email/$1';
 $route['renew/(:any)']                = 'BDF/renew/$1';  
 $route['get_vacant_parks']            = 'BDF/getVacantParks';  
 $route['reviewMembershipDetails']     = 'BDF/reviewBDFOrder';
+
+
+// Zain
+$route['zain_sign_in']                = 'Zain/sign_in';
+$route['zain_sign_in_otp']            = 'Zain/sign_in_otp';

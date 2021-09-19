@@ -98,3 +98,30 @@ $db['default'] = array(
 	'ssl_capath' => NULL,
 	'ssl_cipher' => NULL,
 );
+
+
+$db['new'] = array(
+	'hostname' => 'dev-db.cvghp1veokjx.me-south-1.rds.amazonaws.com',
+	'username' => 'yr',
+	'password' => 'Admin#123',
+	'database' => 'parkpass_api',
+	'dbdriver' => 'mysqli',
+	'port'     =>'3306',
+	'dbprefix' => '',
+	'pconnect' => FALSE,
+	'db_debug' => TRUE,
+	'cache_on' => FALSE,
+	'cachedir' => '',
+	'char_set' => 'utf8',
+	'dbcollat' => 'utf8_general_ci',
+	'swap_pre' => '',
+	'stricton' => FALSE,
+	'autoinit' => TRUE,
+	'stricton' => FALSE,
+	'ssl_set' => true, 
+	'ssl_key' => NULL,
+	'ssl_cert' => NULL,
+	'ssl_ca' => realpath('./application/third_party/mysql-ssl-ca-cert.pem'),
+	'ssl_capath' => NULL,
+	'ssl_cipher' => NULL,
+);

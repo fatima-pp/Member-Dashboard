@@ -97,6 +97,10 @@
 	padding: 0;
 }
 
+.container.left {
+	align-items: flex-start !important;
+}
+
 .parking-box {
 	margin-bottom: 1.25rem !important;
 }
@@ -149,6 +153,10 @@ body {
 	padding: 2.44rem;
 	/* margin: auto 0 !important; */
 }
+.zain .container {
+	padding: 2.44rem;
+	/* margin: auto 0 !important; */
+}
 
 .primary {
 	color: var(--blue) !important;
@@ -189,6 +197,9 @@ ul {
 	margin-bottom: 0.5rem !important;
 }
 
+.zain .page-heading {
+	margin-bottom: 3.5rem !important;
+}
 /* main heading */
 .page-heading h3 {
 	font-weight: var(--mob-main-heading-weight);
@@ -242,6 +253,10 @@ ul {
 	width: 100% !important;
 }
 
+.zain .sign_btn {
+	margin-top: 1.25rem;
+}
+
 .prm-btn,
 .ghost-btn {
 	padding: 0.7rem;
@@ -253,6 +268,11 @@ ul {
 
 .prm-btn-blue {
 	background-color: var(--blue);
+	color: var(--white);
+}
+
+.prm-btn-peach-2 {
+	background-color: var(--peach);
 	color: var(--white);
 }
 
@@ -599,6 +619,14 @@ button.ghost-btn > a {
 		margin: auto !important;
 	}
 
+	.zain .container {
+		margin: auto 0 !important;
+	}
+
+	.container.left {
+		align-items: flex-start;
+	}
+
 	.main-body-holder {
 		align-items: flex-start;
 		padding: 0 2rem;
@@ -612,7 +640,7 @@ button.ghost-btn > a {
 		background-color: white;
 		/* box-shadow: 0px 19px 22px 0px #05416842; */
 		/* padding: 4.625rem 2.25rem; */
-		padding: 2.25rem;
+		padding: 2.25rem 7rem;
 		width: 95%;
 		margin-bottom: 1rem;
 	}
@@ -643,6 +671,7 @@ button.ghost-btn > a {
 
 	.logo-holder {
 		width: 28rem;
+		padding: 2.25rem 7rem;
 	}
 
 	.logo-holder img {
@@ -664,6 +693,14 @@ button.ghost-btn > a {
 		padding-top: 0.5rem;
 		padding-bottom: 0.5rem;
 		align-items: center;
+	}
+
+	.zain .container {
+		padding: 2.44rem 7rem;
+	}
+
+	.container.left {
+		align-items: flex-start;
 	}
 
 	.container.renew {
@@ -718,6 +755,10 @@ button.ghost-btn > a {
 		padding: 2rem 3rem;
 		width: 28rem;
 		/* margin-bottom: 2rem; */
+	}
+
+	.zain .sign_in_form {
+		padding: 5rem 3rem;
 	}
 
 	.form-floating > .form-control,
@@ -883,7 +924,11 @@ button.ghost-btn > a {
 		margin: 0 auto;
 		padding-top: 0.5rem;
 		padding-bottom: 0.5rem;
-		align-items: center;
+		/* align-items: center; */
+	}
+
+	.container.left {
+		align-items: flex-start !important;
 	}
 
 	.container.renew {

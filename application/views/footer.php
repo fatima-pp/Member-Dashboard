@@ -63,6 +63,17 @@
                 $success_div = document.getElementById('success-div'); 
                 $success_div.style.display = 'none';
             }
+
+            $(document).ready(function(){
+                setTimeout(function(){ 
+                    error_div = document.getElementById('error-div')
+                    if(error_div){
+                        error_div.style.display = 'none';
+                    } 
+                },6000);
+            });
+
+
         </script>
     </body>
     

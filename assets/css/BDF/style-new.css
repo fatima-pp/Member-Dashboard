@@ -257,6 +257,15 @@ ul {
 	margin-top: 1.25rem;
 }
 
+div.daterangepicker.ltr.single.opensright.show-calendar
+	> div.drp-buttons
+	> button.btn {
+	/* .zain .drp-buttons button.btn { */
+	display: initial !important;
+	margin-top: 0 !important;
+	border-radius: 0 !important;
+}
+
 .prm-btn,
 .ghost-btn {
 	padding: 0.7rem;
@@ -314,6 +323,10 @@ a:hover {
 
 .dont_have > a {
 	color: var(--blue);
+}
+
+.zain .dont_have > a {
+	color: var(--peach);
 }
 
 .mobile_otp {
@@ -418,10 +431,10 @@ footer section p {
 
 .success-div,
 .error-div {
-	padding: 0.25rem 0.75rem;
+	padding: 0.75rem;
 	margin: 2% 0 !important;
 	font-size: 0.6rem !important;
-	width: 18rem;
+	width: 28rem;
 }
 
 .error-div {

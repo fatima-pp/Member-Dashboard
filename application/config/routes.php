@@ -84,5 +84,8 @@ $route['reviewMembershipDetails']     = 'BDF/reviewBDFOrder';
 
 
 // Zain
-$route['zain_sign_in']                = 'Zain/sign_in';
+$route['(:any)/zain_sign_in']         = 'Zain/sign_in/$1';
 $route['zain_sign_in_otp']            = 'Zain/sign_in_otp';
+$route['zain_verification']           = 'Zain/zain_verification';
+$route['zain_verify_otp']             = 'Zain/zain_verify_otp';
+$route['resend_otp']                  = 'Zain/zain_resend_otp';

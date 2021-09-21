@@ -89,3 +89,4 @@ $route['zain_sign_in_otp']            = 'Zain/sign_in_otp';
 $route['zain_verification']           = 'Zain/zain_verification';
 $route['zain_verify_otp']             = 'Zain/zain_verify_otp';
 $route['resend_otp']                  = 'Zain/zain_resend_otp';
+$route['zain_activate']               = 'Zain/zain_activate_acc';

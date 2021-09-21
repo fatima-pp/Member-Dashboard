@@ -21,7 +21,7 @@
                             </h4>
                         </div>
                     </div>
-                    <form action="<?php echo base_url('sign_in_sub')?>" method="POST">
+                    <form action="<?php echo base_url('zain_activate')?>" method="POST">
 
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="name" name="name" placeholder="Ali" value="<?php if(isset($name)){ echo $name;} else {echo set_value('name');}?>" required>
@@ -43,12 +43,12 @@
                         <div class="form-floating mb-3">
                             <!-- <label for="gender">Gender</label> -->
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="gender" id="male" value="male">
+                                <input class="form-check-input" type="radio" name="gender" id="male" value="male" checked>
                                 <label class="form-check-label" for="male">Male</label>
                             </div>
 
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="gender" id="female" value="female">
+                                <input class="form-check-input" type="radio" name="gender" id="female" value="female" >
                                 <label class="form-check-label" for="female">Female</label>
                             </div>
                         </div>
@@ -67,6 +67,8 @@
                         <div class="form-floating mb-3">
                             <input type="password" class="form-control" id="password" name="password" placeholder="password" value="<?php echo set_value('password');?>" required>
                             <label for="password">Password</label>
+                            <small id="emailHelp" class="form-text text-muted">Must be atleast 6 characters with atleast 1 digit.</small>
+
                             <div class="err-msg">
                                 <?php echo form_error('password'); ?>
                             </div>
@@ -101,7 +103,7 @@
                             <a href="<?php echo base_url('forgot_pass_1');?>">Forgot Password</a>
                         </div> -->
                         <div class="forgot">
-                            <a href="<?php echo base_url($clnt_id.'/zain_sign_in');?>">Use another number?</a>
+                            <a href="<?php echo base_url($clnt_id.'/zain_sign_in');?>">Use another number </a>?
                         </div>
                     </div>
                 </section>

@@ -14,16 +14,30 @@ class Zain extends CI_Controller{
         $this->load->library('session');
     }
 
+
+    public function save_log($function_name = '',$function_status = '',$info = '',$err){
+        $this->Zain_model->save_log($function_name,$function_status,$info,$err);
+        return true;
+    }
+
     public function sign_in($client_id = 0){
 
+        $this->session->sess_destroy();
+
         $this->session->set_userdata('client_id',$client_id);
-        $client_info  = $this->Zain_model->get_client_info($client_id);
 
-        $data['client_info'] = $client_info;
-
-        if($client_info['id'] == 1){
-            $this->load->view('zain_registration',$data);
+        try{
+            $client_info  = $this->Zain_model->get_client_info($client_id);
+            $data['client_info'] = $client_info;
+    
+            if($client_info['id'] == 1){
+                $this->load->view('zain_registration',$data);
+            }
         }
+        catch(\Exception $e){
+            $this->save_log('sign_in','error','error getting client_info',$e);
+        }
+
     }
 
     public function sign_in_otp(){
@@ -173,7 +187,10 @@ class Zain extends CI_Controller{
     }
 
     public function zain_registration_form(){
-        $this->load->view('zain_reg_form');
+        $client_id = $this->session->userdata('client_id');
+        $data['client_id'] = $client_id;
+
+        $this->load->view('zain_reg_form',$data);
     }
 
     public function zain_resend_otp(){
@@ -182,6 +199,120 @@ class Zain extends CI_Controller{
 
         echo ($otp_sent) ? json_encode(1) : json_encode(0);
 
+    }
+
+    public function zain_activate_acc(){
+        $name = $this->input->post('name');
+        $email = $this->input->post('email');
+        $gender = $this->input->post('gender');
+        $dob = $this->input->post('dob');
+        $password = $this->input->post('password');
+        $confirm_password = $this->input->post('confirm_password');
+
+        $mobile = $this->session->userdata('mobile');
+        $client_id = $this->session->userdata('client_id');
+ 
+        $this->form_validation->set_rules('name','Name','required',array('required'=>'Please enter your name'));
+        $this->form_validation->set_rules('email','Email','required|valid_email',array('required'=>'Please enter your email address','valid_email'=>'Email address is incorrect'));
+        $this->form_validation->set_rules('gender','Gender','required',array('required'=>'Please select gender Male or Female'));
+        $this->form_validation->set_rules('dob','Date of Birth','required',array('required'=>'Please select your date of birth'));
+        $this->form_validation->set_rules('password','Password','required|min_length[6]',array('required'=>'Please enter a new password','min_length'=>'Password must contain atleast 6 characters'));
+        $this->form_validation->set_rules('confirm_password','Confirm Password','required',array('required'=>'Please confirm your password by filling confirm password'));
+
+        if($this->form_validation->run() !== FALSE){
+            if($password !== $confirm_password){
+                $this->session->set_flashdata('errors',"'Password' and 'Confirm Password' must match");
+                $this->zain_registration_form();
+            }
+            else{                
+                $this->set_mem_info($name,$email,$gender,$dob,$password,$mobile,$client_id);
+            }
+        }
+        else{
+            $this->session->set_flashdata('errors',validation_errors());
+            $this->zain_registration_form();
+        }
+    }
+
+    public function set_mem_info($name = '',$email = '',$gender = '',$dob = '',$password = '',$mobile = 0,$client_id = 0){
+
+
+        $mem_client_info = $this->get_client_info($mobile);
+
+        //  customers info 
+        $id = $this->get_mem_client_id($client_id);
+
+        $customers['id']            = $id;
+        $customers['first_name']    = $name; //form
+        $customers['email']         = $email; //form
+        $customers['mobile_number'] = $mobile; //form
+        $customers['password']      = md5($password); //form
+        $customers['create_date']   = date('Y-m-d h:i:s'); //we'll take datetime now
+        // $customers['freeday']       = $line->free_monthly_visits;// from account types get free days
+        $customers['client_id']     = $mem_client_info['clientId']; //from new_db
+        $customers['gender']        = $gender; //form
+        $customers['birthday']      = date('Y-m-d H:i:s',strtotime($dob)); //form
+        
+        // wallet info
+        $wallet['customers_id']     = $id;
+        $wallet['creation_date']    = date("Y-m-d H:i:s");
+
+
+        // account info
+        $default_expiry = '2058-12-31 23:59:59';
+        $accountRecord['create_date']      = date("Y-m-d H:i:s"); //datetime now
+        $accountRecord['expiry_date']      = date('Y-m-d H:i:s',strtotime($default_expiry)); //have to define either 2058 or some other
+        $accountRecord['active']           = 1; //self activated
+        $accountRecord['id']               = $id; //
+        $accountRecord['customers_id']     = $id; // from customers table
+        $accountRecord['account_types_id'] = $mem_client_info['accountTypeId']; //from privilege type
+
+
+        // mobile info
+        $mobile['customers_id']             = $id;
+        $mobile['mobile']                   = $mobile;//form
+
+        // address info
+        $address['customers_id']            = $id;
+
+        // car info
+        $carRecord['account_id']            = $id;
+
+        // active
+        $activeRecord['customers_id']       = $id;
+        $activeRecord['parkpass_details']   = 1;
+
+        $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile,$address,$activeRecord,$carRecord);
+        if($mem_info_saved){
+            // log
+            // success view
+            // send email (verification + welcome)
+            // send sms (welcome)
+        }
+        else{
+            // log problem
+            // show error view
+        }
+    }
+
+    public function get_client_info($mobile = 0){
+        if($mobile == 0 || $mobile === null || $mobile === ''){
+            return false;
+        }
+        else{
+            $mem_client_info = $this->Zain_model->get_mem_client_info($mobile);
+            if($mem_client_info){
+                return $mem_client_info;
+            }
+            else{
+                return false;
+            }
+        }
+    }
+
+    public function get_mem_client_id($client_id = 0){
+        $mem_id = $this->Zain_model->get_mem_id($client_id);
+        return $mem_id;
     }
 
 }

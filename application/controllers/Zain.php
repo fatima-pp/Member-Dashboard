@@ -14,30 +14,27 @@ class Zain extends CI_Controller{
         $this->load->library('session');
     }
 
-
-    public function save_log($function_name = '',$function_status = '',$info = '',$err){
-        $this->Zain_model->save_log($function_name,$function_status,$info,$err);
-        return true;
+    public function show_404($function_name = ''){
+        $data['function_name'] = $function_name;
+        $this->load->view('404',$data);
     }
 
     public function sign_in($client_id = 0){
 
         $this->session->sess_destroy();
-
         $this->session->set_userdata('client_id',$client_id);
 
-        try{
-            $client_info  = $this->Zain_model->get_client_info($client_id);
-            $data['client_info'] = $client_info;
-    
-            if($client_info['id'] == 1){
-                $this->load->view('zain_registration',$data);
-            }
-        }
-        catch(\Exception $e){
-            $this->save_log('sign_in','error','error getting client_info',$e);
-        }
 
+        $client_info  = $this->Zain_model->get_client_info($client_id);
+        $data['client_info'] = $client_info;
+
+        if($client_info['id'] == 1){
+            $this->load->view('zain_registration',$data);
+        }
+        else if(!$client_info){
+            // error from model
+            $this->show_404($client_id.'/zain_sign_in');
+        }
     }
 
     public function sign_in_otp(){
@@ -234,65 +231,72 @@ class Zain extends CI_Controller{
         }
     }
 
+    // storing all info for db and after successfull activation showing success view and sending mail and sms
     public function set_mem_info($name = '',$email = '',$gender = '',$dob = '',$password = '',$mobile = 0,$client_id = 0){
-
 
         $mem_client_info = $this->get_client_info($mobile);
 
         //  customers info 
         $id = $this->get_mem_client_id($client_id);
+        if($id){
 
-        $customers['id']            = $id;
-        $customers['first_name']    = $name; //form
-        $customers['email']         = $email; //form
-        $customers['mobile_number'] = $mobile; //form
-        $customers['password']      = md5($password); //form
-        $customers['create_date']   = date('Y-m-d h:i:s'); //we'll take datetime now
-        // $customers['freeday']       = $line->free_monthly_visits;// from account types get free days
-        $customers['client_id']     = $mem_client_info['clientId']; //from new_db
-        $customers['gender']        = $gender; //form
-        $customers['birthday']      = date('Y-m-d H:i:s',strtotime($dob)); //form
-        
-        // wallet info
-        $wallet['customers_id']     = $id;
-        $wallet['creation_date']    = date("Y-m-d H:i:s");
-
-
-        // account info
-        $default_expiry = '2058-12-31 23:59:59';
-        $accountRecord['create_date']      = date("Y-m-d H:i:s"); //datetime now
-        $accountRecord['expiry_date']      = date('Y-m-d H:i:s',strtotime($default_expiry)); //have to define either 2058 or some other
-        $accountRecord['active']           = 1; //self activated
-        $accountRecord['id']               = $id; //
-        $accountRecord['customers_id']     = $id; // from customers table
-        $accountRecord['account_types_id'] = $mem_client_info['accountTypeId']; //from privilege type
+            $customers['id']            = $id;
+            $customers['first_name']    = $name; //form
+            $customers['email']         = $email; //form
+            $customers['mobile_number'] = $mobile; //form
+            $customers['password']      = md5($password); //form
+            $customers['create_date']   = date('Y-m-d h:i:s'); //we'll take datetime now
+            // $customers['freeday']       = $line->free_monthly_visits;// from account types get free days
+            $customers['client_id']     = $mem_client_info['clientId']; //from new_db
+            $customers['gender']        = $gender; //form
+            $customers['birthday']      = date('Y-m-d H:i:s',strtotime($dob)); //form
+            
+            // wallet info
+            $wallet['customers_id']     = $id;
+            $wallet['creation_date']    = date("Y-m-d H:i:s");
 
 
-        // mobile info
-        $mobile['customers_id']             = $id;
-        $mobile['mobile']                   = $mobile;//form
+            // account info
+            $default_expiry = '2058-12-31 23:59:59';
+            $accountRecord['create_date']      = date("Y-m-d H:i:s"); //datetime now
+            $accountRecord['expiry_date']      = date('Y-m-d H:i:s',strtotime($default_expiry)); //have to define either 2058 or some other
+            $accountRecord['active']           = 1; //self activated
+            $accountRecord['id']               = $id; //
+            $accountRecord['customers_id']     = $id; // from customers table
+            $accountRecord['account_types_id'] = $mem_client_info['accountTypeId']; //from privilege type
 
-        // address info
-        $address['customers_id']            = $id;
 
-        // car info
-        $carRecord['account_id']            = $id;
+            // mobile info
+            $mobile['customers_id']             = $id;
+            $mobile['mobile']                   = $mobile;//form
 
-        // active
-        $activeRecord['customers_id']       = $id;
-        $activeRecord['parkpass_details']   = 1;
+            // address info
+            $address['customers_id']            = $id;
 
-        $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile,$address,$activeRecord,$carRecord);
-        if($mem_info_saved){
-            // log
-            // success view
-            // send email (verification + welcome)
-            // send sms (welcome)
+            // car info
+            $carRecord['account_id']            = $id;
+
+            // active
+            $activeRecord['customers_id']       = $id;
+            $activeRecord['parkpass_details']   = 1;
+
+            $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile,$address,$activeRecord,$carRecord);
+            if($mem_info_saved){
+                // log
+                // success view
+                // send email (verification + welcome)
+                // send sms (welcome)
+            }
+            else{
+                // log problem
+                $this->show_404('zain_activate');
+            }
         }
         else{
             // log problem
-            // show error view
+            $this->show_404('zain_activate');
         }
+
     }
 
     public function get_client_info($mobile = 0){
@@ -312,7 +316,12 @@ class Zain extends CI_Controller{
 
     public function get_mem_client_id($client_id = 0){
         $mem_id = $this->Zain_model->get_mem_id($client_id);
-        return $mem_id;
+        if(!$mem_id){
+            $this->show_404('zain_activate');
+        }
+        else{
+            return $mem_id;
+        }
     }
 
 }

@@ -251,6 +251,11 @@ ul {
 	position: relative !important;
 }
 
+.btn-holder.err_page_zain {
+	display: flex !important;
+	justify-content: space-between;
+}
+
 .sign_btn {
 	margin-top: 2.5rem;
 	margin-bottom: 4rem;

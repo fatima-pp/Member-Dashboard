@@ -10,6 +10,10 @@
                     </div>
                 <?php } ?>
 
+                <div style="display:none !important;">
+                    <?php echo $client_id; ?>
+                </div>
+
                 <section class="sign_in_form">
                     <div class="page-heading">
                         <div class="heading black-font">
@@ -30,6 +34,8 @@
                                 <?php echo form_error('mobile'); ?>
                             </div>
                         </div>
+
+                        <input type="hidden" name="client_id" id="client_id" value="<?php if(isset($client_id)){echo $client_id;} ?>">
                         
                         <div class="btn-holder">
                             <button type="submit" class="prm-btn prm-btn-peach-2 sign_btn">Send OTP</button>

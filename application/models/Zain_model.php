@@ -60,7 +60,7 @@ class Zain_model extends CI_Model{
 
             $query = $this->db->select('*')->from('client')->where(array('id'=>$client_id,'status'=>$act_stat))->get();
             $response = $this->exec_qry($query,'get_client_info');
-            if($response){
+            if($response){ //which is actual data,not false or 0 (no rows)
                 return $response;
             }
         }
@@ -106,7 +106,7 @@ class Zain_model extends CI_Model{
     public function get_prev_id($client_id = 0){
         $default_db = $this->load->database('default', TRUE);
 
-        $qry = $default_db->select('*')->from('customers')->where(array('id'=>$client_id))->order_by('id','DESC')->limit(1)->get();        
+        $qry = $default_db->select('*')->from('customers')->where(array('client_id'=>$client_id))->order_by('id','DESC')->limit(1)->get();        
         $response = $this->exec_qry($qry,'verify_ppass');
         return $response;
     }
@@ -124,7 +124,7 @@ class Zain_model extends CI_Model{
             $client_info = $this->get_client_info($client_id);
 
             if($client_info){
-                $first_id = $client_info['prefix'] . '0000' . '0001';
+                $first_id = $client_info['prefix'] . '0000' . '0000';
                 return $first_id; 
             }            
             return false;                                
@@ -149,10 +149,13 @@ class Zain_model extends CI_Model{
                     $default_db->insert('address', $address);
                     $default_db->insert('active', $activeRecord);
                     $default_db->insert('account_cars', $carRecord);
-                $default_db->trans_complete();
+                $is_complete = $default_db->trans_complete();
                 
                 if ($this->db->trans_status() === false) {
                     $error = $this->db->error(); 
+                }
+                else{
+                    return $is_complete;
                 }
 
             }

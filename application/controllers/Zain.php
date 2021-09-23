@@ -19,17 +19,26 @@ class Zain extends CI_Controller{
         $this->load->view('404',$data);
     }
 
-    public function sign_in($client_id = 0){
+    public function show_200($url = ''){
+        $data['url'] = $url;
+        $this->load->view('200',$data);
+    }
 
-        $this->session->sess_destroy();
-        $this->session->set_userdata('client_id',$client_id);
+    public function sign_in($client_id = 1){
 
+        $this->session->sess_destroy(); //whenever coming to sign in page ,the session is cleared 
+        
+        $this->session->set_userdata('client_id',$client_id);//getting it from the url
 
         $client_info  = $this->Zain_model->get_client_info($client_id);
-        $data['client_info'] = $client_info;
-
-        if($client_info['id'] == 1){
-            $this->load->view('zain_registration',$data);
+        $data['client_id'] = $this->session->userdata('client_id');
+        
+        if($client_info){
+            $data['client_info'] = $client_info; //from new_db
+            if($client_info['id'] == 1){
+                $this->load->view('zain_registration',$data);
+            }
+            // later each client will have their own views
         }
         else if(!$client_info){
             // error from model
@@ -37,74 +46,82 @@ class Zain extends CI_Controller{
         }
     }
 
+
+    // verify number is zain and has parkpass and send otp 
     public function sign_in_otp(){
 
-        $client_id = $this->session->userdata('client_id');
-        $mobile = $this->input->post('mobile');
+        $client_id = $this->input->post('client_id');
+        $mobile    = $this->input->post('mobile');
 
-        $this->form_validation->set_rules('mobile','Mobile Number','required|exact_length[8]',array('exact_length'=>'Please enter valid mobile number'));
+        if(!isset($client_id) || !isset($mobile) || $mobile == null || $client_id == null){
+            redirect('1/zain_sign_in');
+        }
 
-        if($this->form_validation->run() !== FALSE){
-            // make one db read,without condition just mobile number
-            // if no row returned then mobile doesnot exists
-            // else then check each value seperately and display errors accordingly.
-            
-            // mobile exists
-            $is_zain = $this->Zain_model->verify_zain($mobile);
-            if($is_zain){
+        else{
 
-                // active from zain
-                $is_zain_actv = ($is_zain['clientStatus'] === 'active') ? true : false;
-                if($is_zain_actv){
+            $this->session->set_userdata('client_id',$client_id);//setting it one more time
 
-                    // is assigned parkpass
-                    $is_ppass = ($is_zain['privilegeId'] !== '' && $is_zain['privilegeId'] !== null) ? true : false;
-                    if($is_ppass){
+            $this->form_validation->set_rules('mobile','Mobile Number','required|exact_length[8]',array('exact_length'=>'Please enter valid mobile number'));
 
-                        // is parkpass account active and expired or not
-                        $ppass_active = ($is_zain['status'] === 'active') ? true : false;
-                        $ppass_expiry = ($is_zain['expiryDate'] === null || $is_zain['expiryDate'] >=  date("Y-m-d H:i:s")) ? true : false;
-                        $is_ppass_valid = ($ppass_active && $ppass_expiry) ? true : false;
-                        if($is_ppass_valid){
+            if($this->form_validation->run() !== FALSE){
+                
+                // mobile number exists
+                $is_zain = $this->Zain_model->verify_zain($mobile);
+                if($is_zain){
 
-                            // is OTP sent successfully
-                            $otp_sent = $this->generate_OTP($mobile);
-                            if($otp_sent){
-                                $data['zain_dtls'] = $is_zain;
-                                $data['client_id'] = $client_id;
-                                $data['mobile'] = $mobile;
+                    // active from zain
+                    $is_zain_actv = ($is_zain['clientStatus'] === 'active') ? true : false;
+                    if($is_zain_actv){
 
-                                $zain_dtls = $this->session->set_userdata('zain_dtls',$is_zain);
-                                redirect('zain_verification');
+                        // is assigned parkpass
+                        $is_ppass = ($is_zain['privilegeId'] !== '' && $is_zain['privilegeId'] !== null) ? true : false;
+                        if($is_ppass){
+
+                            // is parkpass account active and expired or not
+                            $ppass_active = ($is_zain['status'] === 'active') ? true : false;
+                            $ppass_expiry = ($is_zain['expiryDate'] === null || $is_zain['expiryDate'] >=  date("Y-m-d H:i:s")) ? true : false;
+                            $is_ppass_valid = ($ppass_active && $ppass_expiry) ? true : false;
+                            if($is_ppass_valid){
+
+                                // is OTP sent successfully
+                                $otp_sent = $this->generate_OTP($mobile);
+                                if($otp_sent){
+                                    $data['zain_dtls'] = $is_zain;
+                                    $data['client_id'] = $client_id;
+                                    $data['mobile'] = $mobile;
+
+                                    $this->session->set_userdata('zain_dtls',$is_zain);
+                                    redirect('zain_verification');
+                                }
+                                else{
+                                    $this->session->set_flashdata('errors',"Didn't receive OTP ? Click Resend OTP");
+                                    $this->load->view('zain_registration_otp');
+                                }
                             }
                             else{
-                                $this->session->set_flashdata('errors',"Didn't receive OTP ? Click Resend OTP");
-                                $this->load->view('zain_registration_otp');
-                            }
+                                $this->session->set_flashdata('errors','Please ensure your ParkPass membership is active');
+                                $this->sign_in($client_id);
+                            }         
                         }
                         else{
-                            $this->session->set_flashdata('errors','Please ensure your ParkPass membership is active');
+                            $this->session->set_flashdata('errors','Please ensure you are a ParkPass member');
                             $this->sign_in($client_id);
-                        }         
+                        } 
                     }
                     else{
-                        $this->session->set_flashdata('errors','Please ensure you are a ParkPass member');
+                        $this->session->set_flashdata('errors','Please ensure you are zain membership is active');
                         $this->sign_in($client_id);
-                    } 
+                    }            
                 }
                 else{
-                    $this->session->set_flashdata('errors','Please ensure you are zain membership is active');
+                    $this->session->set_flashdata('errors','Please ensure you are entering a valid zain number');
                     $this->sign_in($client_id);
                 }            
             }
             else{
-                $this->session->set_flashdata('errors','Please ensure you are entering a valid zain number');
+                $this->session->set_flashdata('errors',validation_errors());
                 $this->sign_in($client_id);
-            }            
-        }
-        else{
-            $this->session->set_flashdata('errors',validation_errors());
-            $this->sign_in($client_id);
+            }
         }
     }
 
@@ -120,7 +137,7 @@ class Zain extends CI_Controller{
             if (!empty($member_number) && $member_number != '0') {
                 // sendMsg($member_number, "Your ParkPass membership activation PIN is "."$otp");
                 $otp = 1234;
-                // replace seconf line with line 1,for production
+                // replace second line with line 1,for production
             }
 
             $generatedOTP = $otp;
@@ -129,7 +146,7 @@ class Zain extends CI_Controller{
                 'otp' => $otp
             );
             $this->session->set_userdata('code', $generatedOTP);
-            $this->session->set_userdata('mobile', $member_number);  
+            $this->session->set_userdata('mobile', (int)$member_number);  
             return $otp;   
         }
         else{
@@ -137,6 +154,7 @@ class Zain extends CI_Controller{
         } 
     }
 
+    // show otp form,OTP already sent after verifying number
     public function zain_verification($zain_dtls = null){
         $data = null;
         
@@ -152,18 +170,24 @@ class Zain extends CI_Controller{
         $this->load->view('zain_registration_otp',$data);
     } 
     
+    //verify same OTP is sent and show registration form
     public function zain_verify_otp(){
         
         $otp = (int)$this->input->post('otp');
+        $mobile = (int)$this->input->post('mobile');
+        
         $otp_sent = $this->session->userdata('code');
 
         $client_id = $this->session->userdata('client_id');
         $data['client_id'] = $client_id;
 
+        $mobile = (int)$this->session->userdata('mobile');
+        $data['mobile'] = $mobile;
+
         $this->form_validation->set_rules('otp','OTP','required',array('required'=>'Please enter the OTP sent to provided mobile number'));
         if($this->form_validation->run() !== FALSE){
             if(isset($otp)){
-                $is_otp_verified = $this->compare_otp($otp,$otp_sent);
+                $is_otp_verified = $this->compare_otp($otp,$otp_sent,$mobile);
                 if($is_otp_verified){
                     $this->load->view('zain_reg_form',$data);
                 }
@@ -179,8 +203,10 @@ class Zain extends CI_Controller{
         }
     }
 
-    public function compare_otp($user_otp = 0000,$otp_sent = 0000){
-        return ($user_otp === $otp_sent) ;
+    public function compare_otp($user_otp = 0000,$otp_sent = 0000,$mobile = 0){
+        $user_mobile = (int)$this->session->userdata('mobile');
+        $mobile = $mobile;
+        return (($user_otp === $otp_sent) && ($mobile === $user_mobile)) ;
     }
 
     public function zain_registration_form(){
@@ -192,10 +218,16 @@ class Zain extends CI_Controller{
 
     public function zain_resend_otp(){
         $mobile = $this->input->post('mobile');
-        $otp_sent = $this->generate_OTP($mobile);
+        if(isset($mobile) && $mobile !== '' && $mobile !== null && (strlen((string)$mobile) == 8)){
+            $otp_sent = $this->generate_OTP($mobile);
+            echo ($otp_sent) ? json_encode(1) : json_encode(0);
+        }else{
+            echo json_encode(0);
+        }
+    }
 
-        echo ($otp_sent) ? json_encode(1) : json_encode(0);
-
+    public function get_session_info(){
+		print_r($this->session->userdata());
     }
 
     public function zain_activate_acc(){
@@ -208,6 +240,8 @@ class Zain extends CI_Controller{
 
         $mobile = $this->session->userdata('mobile');
         $client_id = $this->session->userdata('client_id');
+
+        // $mobile = $this->input->post('mobile');
  
         $this->form_validation->set_rules('name','Name','required',array('required'=>'Please enter your name'));
         $this->form_validation->set_rules('email','Email','required|valid_email',array('required'=>'Please enter your email address','valid_email'=>'Email address is incorrect'));
@@ -267,8 +301,8 @@ class Zain extends CI_Controller{
 
 
             // mobile info
-            $mobile['customers_id']             = $id;
-            $mobile['mobile']                   = $mobile;//form
+            $mobile_data['customers_id']             = $id;
+            $mobile_data['mobile']                   = $mobile;//form
 
             // address info
             $address['customers_id']            = $id;
@@ -280,10 +314,11 @@ class Zain extends CI_Controller{
             $activeRecord['customers_id']       = $id;
             $activeRecord['parkpass_details']   = 1;
 
-            $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile,$address,$activeRecord,$carRecord);
+            $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile_data,$address,$activeRecord,$carRecord);
             if($mem_info_saved){
                 // log
                 // success view
+                $this->show_200('https://park-pass.com/buyPackage');
                 // send email (verification + welcome)
                 // send sms (welcome)
             }
@@ -320,7 +355,22 @@ class Zain extends CI_Controller{
             $this->show_404('zain_activate');
         }
         else{
-            return $mem_id;
+
+            // $rest = substr("abcdef", 0, -1);  // returns "abcde"
+            $prefix = substr($mem_id,0,3);
+
+            $length_id = strlen($mem_id);
+            $id_len = 3 - $length_id;
+            $id = substr($mem_id,$id_len);
+            
+            $int_id = (int)$id;
+            $inc_id = ++$int_id;
+            $str_id = (string)$inc_id;
+
+            $full_id = str_pad($str_id, 8, "0", STR_PAD_LEFT);
+            $new_id = $prefix . $full_id;
+
+            return $new_id;
         }
     }
 

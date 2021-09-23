@@ -68,7 +68,7 @@ class BDF_model extends CI_Model{
             $pass_res_data = array(
                 'account_id' => $account_info['customers_id'],
                 'email' => $email, 
-                'created_at' => date('Y-m-d h:i:s'), 
+                'created_at' => date('Y-m-d h:i:s'),     
                 'token'=> $token
             );
             $this->db->insert('pass_reset', $pass_res_data);

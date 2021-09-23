@@ -26,7 +26,6 @@
                     <p class="msg-in">Enter the OTP below to continue.</p>
                 </div>
 
-                <!-- <?php var_dump($zain_dtls);?> -->
                 <section class="sign_in_form">
                     <div class="page-heading">
                         <div class="heading black-font">

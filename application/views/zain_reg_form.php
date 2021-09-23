@@ -39,9 +39,7 @@
                             </div>
                         </div>
 
-                        <!-- gender -->
                         <div class="form-floating mb-3">
-                            <!-- <label for="gender">Gender</label> -->
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="gender" id="male" value="male" checked>
                                 <label class="form-check-label" for="male">Male</label>
@@ -53,7 +51,6 @@
                             </div>
                         </div>
 
-                        <!-- date of birth -->
                         
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="dob" name="dob" placeholder="Ali" value="<?php if(isset($dob)){ echo $dob;} else {echo set_value('dob');}?>" required>
@@ -97,11 +94,9 @@
 
                     <?php $clnt_id = 0; if(isset($client_id)){ $clnt_id = $client_id; } ?>
 
+                    <input type="hidden" name="mobile" id="mobile" value="<?php if(isset($mobile)){echo $mobile;} ?>">
 
                     <div class="links">
-                        <!-- <div class="forgot">
-                            <a href="<?php echo base_url('forgot_pass_1');?>">Forgot Password</a>
-                        </div> -->
                         <div class="forgot">
                             <a href="<?php echo base_url($clnt_id.'/zain_sign_in');?>">Use another number </a>?
                         </div>

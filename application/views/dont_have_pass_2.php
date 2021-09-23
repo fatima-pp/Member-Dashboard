@@ -41,7 +41,9 @@
 
                         <div class="form-floating mb-3">
                             <input type="password" class="form-control" id="password" name="password" placeholder="password"  value="<?php echo set_value('password');?>" required>
-                            <label for="floatingPassword">Password</label>
+                            <label for="floatingPassword">New Password</label>
+                            <small id="emailHelp" class="form-text text-muted">Must be atleast 6 characters with atleast 1 digit and a special character (@#$%^&+=_!*-)</small>
+
                         </div>
 
                         <div class="form-floating ">

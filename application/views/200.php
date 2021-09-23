@@ -5,15 +5,20 @@
                 <section class="sign_in_form">
                     <div class="page-heading">
                         <div class="heading black-font">
-                            <h3>Account activated successfully !</h3>
+                            <h3>
+                                <?php echo (isset($msg_header))  ? $msg_header : 'Account activated successfully !' ;?>    
+                            </h3>
                         </div>
                         <br><br>
                         <div class="sec-heading">
                             <h4>
-                                Glad to have you on board
+                                <?php echo (isset($msg_info))  ? $msg_info : 'Glad to have you on board !' ;?>                                 
                             </h4>
                             <h4>
                                Hope you enjoy our premium valet service.
+                            </h4>
+                            <h4>
+                                <?php echo (isset($msg_info_p))  ? $msg_info_p : '' ;?>                                 
                             </h4>
                         </div>
                     </div>

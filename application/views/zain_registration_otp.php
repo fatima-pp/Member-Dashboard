@@ -22,7 +22,7 @@
                     <div class="success-in-div">
                         <h4 class="msg-big">OTP sent!</h4>
                         <span onclick="closeSuccess()" class="close_succ">X</span>
-                    </div>
+                    </div>  
                     <p class="msg-in">Enter the OTP below to continue.</p>
                 </div>
 

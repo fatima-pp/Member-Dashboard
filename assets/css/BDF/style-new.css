@@ -201,6 +201,9 @@ ul {
 	margin-bottom: 2.5rem !important;
 }
 
+.zain .page-heading .heading {
+	width: max-content;
+}
 .zain .form-text {
 	font-size: 0.75rem !important;
 }
@@ -264,6 +267,7 @@ ul {
 
 .zain .sign_btn {
 	margin-top: 1.25rem;
+	width: 40% !important;
 }
 
 div.daterangepicker.ltr.single.opensright.show-calendar
@@ -443,8 +447,9 @@ footer section p {
 	padding: 0.75rem;
 	margin: 2% 0 !important;
 	font-size: 0.6rem !important;
-	width: 28rem;
+	width: auto !important;
 }
+/* width: 28rem; */
 
 .error-div {
 	background: #ffdddd !important;
@@ -707,6 +712,11 @@ button.ghost-btn > a {
 	.form-headers li.tab > a > i {
 		margin-right: 1rem !important;
 	}
+
+	.success-div,
+	.error-div {
+		margin: 2% 0 2% 7rem !important;
+	}
 }
 
 @media screen and (min-width: 1024px) {
@@ -927,6 +937,10 @@ button.ghost-btn > a {
 
 	.header-form-section {
 		width: -webkit-fill-available;
+	}
+	.success-div,
+	.error-div {
+		margin: 2% 0 !important;
 	}
 }
 

@@ -14,12 +14,18 @@ class Zain extends CI_Controller{
         $this->load->library('session');
     }
 
+    public function php_info(){
+        print_r(phpinfo());
+    }
+    
+
     public function show_404($function_name = ''){
         $data['function_name'] = $function_name;
         $this->load->view('404',$data);
     }
 
-    public function show_200($url = '',$msg_header= '',$msg_info ='',$msg_info_p = ''){
+    public function show_200($url = '',$msg_header= null,$msg_info =null,$msg_info_p = null){
+        $this->session->sess_destroy();
         $data['url'] = $url;
 
         $data['msg_header'] = $msg_header;
@@ -31,7 +37,7 @@ class Zain extends CI_Controller{
 
     public function sign_in($client_id = 1){
 
-        $this->session->sess_destroy(); //whenever coming to sign in page ,the session is cleared 
+        // $this->session->sess_destroy(); //whenever coming to sign in page ,the session is cleared 
         
         $this->session->set_userdata('client_id',$client_id);//getting it from the url
 
@@ -54,6 +60,9 @@ class Zain extends CI_Controller{
 
     // verify number is zain and has parkpass and send otp 
     public function sign_in_otp(){
+
+        $this->session->set_flashdata('errors',''); //  clearing previous messages
+
 
         $client_id = $this->input->post('client_id');
         $mobile    = $this->input->post('mobile');
@@ -151,9 +160,8 @@ class Zain extends CI_Controller{
             $otp = rand(1000, 9999);
 
             if (!empty($member_number) && $member_number != '0') {
-                // sendMsg($member_number, "Your ParkPass membership activation PIN is "."$otp");
-                $otp = 1234;
-                // replace second line with line 1,for production
+                // sendMsg($member_number, "Your ParkPass membership activation PIN is "."$otp"); // remove comment for production
+                $otp = 1234; // comment this for peoduction
             }
 
             $generatedOTP = $otp;
@@ -172,63 +180,77 @@ class Zain extends CI_Controller{
 
     // show otp form,OTP already sent after verifying number
     public function zain_verification($zain_dtls = null){
-        $data = null;
-        
-        $zain_dtls = $this->session->userdata('zain_dtls');
-        $data['zain_dtls'] = $zain_dtls;
-
-        $client_id = $this->session->userdata('client_id');
-        $data['client_id'] = $client_id;
-
         $mobile = $this->session->userdata('mobile');
-        $data['mobile'] = $mobile;
 
-        $this->load->view('zain_registration_otp',$data);
+        if(!isset($mobile)){
+            redirect('1/zain_sign_in');
+        }
+        else{
+
+            $data = null;
+            
+            $zain_dtls = $this->session->userdata('zain_dtls');
+            $data['zain_dtls'] = $zain_dtls;
+            
+            $client_id = $this->session->userdata('client_id');
+            $data['client_id'] = $client_id;
+            
+            $data['mobile'] = $mobile;
+            
+            $this->load->view('zain_registration_otp',$data);
+        }
     } 
     
     //verify same OTP is sent and show registration form
     public function zain_verify_otp(){
-        
-        $otp = (int)$this->input->post('otp');
-        $mobile = (int)$this->input->post('mobile');
-        
-        $otp_sent = $this->session->userdata('code');
+        $mobile = $this->session->userdata('mobile');
 
-        $client_id = $this->session->userdata('client_id');
-        $data['client_id'] = $client_id;
-
-        $mobile = (int)$this->session->userdata('mobile');
-        $data['mobile'] = $mobile;
-
-        $this->form_validation->set_rules('otp','OTP','required',array('required'=>'Please enter the OTP sent to provided mobile number'));
-        if($this->form_validation->run() !== FALSE){
-            if(isset($otp)){
-                $is_otp_verified = $this->compare_otp($otp,$otp_sent,$mobile);
-                if($is_otp_verified){
-                    // check if member is already a parkpass member
-                    $is_ppass = $this->isParkPassMember($mobile,$client_id);
-                    // get previous account and customer info 
-                    // and create new account and attach under same customer
-                    // show success view
-
-                    if($is_ppass){
-                        $this->show_200('https://park-pass.com/buyPackage');
-                    }
-                    else{
-                        // else this
-                        $this->session->set_flashdata('errors',"");
-                        $this->load->view('zain_reg_form',$data);
-                    }
-                }
-                else{
-                    $this->session->set_flashdata('errors',"Incorrect OTP! Enter the OTP sent or click 'Resend OTP' for new OTP");
-                    $this->load->view('zain_registration_otp');
-                }
-            }
+        if(!isset($mobile)){
+            redirect('1/zain_sign_in');
         }
         else{
-            $this->session->set_flashdata('errors',validation_errors());
-            $this->load->view('zain_registration_otp');
+
+            $otp = (int)$this->input->post('otp');
+            $mobile = (int)$this->input->post('mobile');
+            
+            $otp_sent = $this->session->userdata('code');
+
+            $client_id = $this->session->userdata('client_id');
+            $data['client_id'] = $client_id;
+
+            $mobile = (int)$this->session->userdata('mobile');
+            $data['mobile'] = $mobile;
+
+            $this->form_validation->set_rules('otp','OTP','required',array('required'=>'Please enter the OTP sent to provided mobile number'));
+            if($this->form_validation->run() !== FALSE){
+                if(isset($otp)){
+                    $is_otp_verified = $this->compare_otp($otp,$otp_sent,$mobile);
+                    if($is_otp_verified){
+                        // check if member is already a parkpass member
+                        $is_ppass = $this->isParkPassMember($mobile,$client_id);
+                        // get previous account and customer info 
+                        // and create new account and attach under same customer
+                        // show success view
+
+                        if($is_ppass){
+                            $this->show_200('https://park-pass.com/buyPackage');
+                        }
+                        else{
+                            // else this
+                            $this->session->set_flashdata('errors',"");
+                            $this->load->view('zain_reg_form',$data);
+                        }
+                    }
+                    else{
+                        $this->session->set_flashdata('errors',"Incorrect OTP! Enter the OTP sent or click 'Resend OTP' for new OTP");
+                        $this->load->view('zain_registration_otp');
+                    }
+                }
+            }
+            else{
+                $this->session->set_flashdata('errors',validation_errors());
+                $this->load->view('zain_registration_otp');
+            }
         }
     }
 
@@ -247,11 +269,17 @@ class Zain extends CI_Controller{
 
     public function zain_resend_otp(){
         $mobile = $this->input->post('mobile');
-        if(isset($mobile) && $mobile !== '' && $mobile !== null && (strlen((string)$mobile) == 8)){
-            $otp_sent = $this->generate_OTP($mobile);
-            echo ($otp_sent) ? json_encode(1) : json_encode(0);
-        }else{
-            echo json_encode(0);
+        if(isset($mobile) && $mobile !== '' && $mobile !== null){
+            if((strlen((string)$mobile) == 8)){
+                $otp_sent = $this->generate_OTP($mobile);
+                echo ($otp_sent) ? json_encode(1) : json_encode(0);
+            }
+            else{
+                echo json_encode(0);
+            }            
+        }
+        else{
+            redirect('1/zain_sign_in');
         }
     }
 
@@ -260,96 +288,117 @@ class Zain extends CI_Controller{
     }
 
     public function zain_activate_acc(){
-        $name = $this->input->post('name');
-        $email = $this->input->post('email');
-        $gender = $this->input->post('gender');
-        $dob = $this->input->post('dob');
-        $password = $this->input->post('password');
-        $confirm_password = $this->input->post('confirm_password');
-
         $mobile = $this->session->userdata('mobile');
-        $client_id = $this->session->userdata('client_id');
+        $otp = $this->session->userdata('code');
 
-        // $mobile = $this->input->post('mobile');
- 
-        $this->form_validation->set_rules('name','Name','required',array('required'=>'Please enter your name'));
-        $this->form_validation->set_rules('email','Email','required|valid_email',array('required'=>'Please enter your email address','valid_email'=>'Email address is incorrect'));
-        $this->form_validation->set_rules('gender','Gender','required',array('required'=>'Please select gender Male or Female'));
-        $this->form_validation->set_rules('dob','Date of Birth','required',array('required'=>'Please select your date of birth'));
-        $this->form_validation->set_rules('password','Password','required|min_length[6]',array('required'=>'Please enter a new password','min_length'=>'Password must contain atleast 6 characters'));
-        $this->form_validation->set_rules('confirm_password','Confirm Password','required',array('required'=>'Please confirm your password by filling confirm password'));
+       if(isset($mobile) && isset($otp)) {
 
-        if($this->form_validation->run() !== FALSE){
-            if($password !== $confirm_password){
-                $this->session->set_flashdata('errors',"'Password' and 'Confirm Password' must match");
-                $this->zain_registration_form();
+            $name = $this->input->post('name');
+            $email = $this->input->post('email');
+            $gender = $this->input->post('gender');
+            $dob = $this->input->post('dob');
+            $password = $this->input->post('password');
+            $confirm_password = $this->input->post('confirm_password');
+
+            $mobile = $this->session->userdata('mobile');
+            $client_id = $this->session->userdata('client_id');
+
+            // $mobile = $this->input->post('mobile');
+    
+            $this->form_validation->set_rules('name','Name','required',array('required'=>'Please enter your name'));
+            $this->form_validation->set_rules('email','Email','required|valid_email',array('required'=>'Please enter your email address','valid_email'=>'Email address is incorrect'));
+            $this->form_validation->set_rules('gender','Gender','required',array('required'=>'Please select gender Male or Female'));
+            $this->form_validation->set_rules('dob','Date of Birth','required',array('required'=>'Please select your date of birth'));
+
+            // (?=.+\w)(?=.+\d)(?=.*[@#$%^&+=_!*-]).{6,}
+            $this->form_validation->set_rules('password','Password','required|min_length[6]|regex_match[/^(?=.+[a-zA-Z])(?=.+[0-9])(?=.+[@#$%^&+=_!*-]).{6,}$/]',array('required'=>'Please enter a new password','min_length'=>'Password must contain atleast 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one special character(@#$%^&+=_)'));
+            $this->form_validation->set_rules('confirm_password','Confirm Password','required',array('required'=>'Please confirm your password by filling confirm password'));
+
+            if($this->form_validation->run() !== FALSE){
+                if($password !== $confirm_password){
+                    $this->session->set_flashdata('errors',"'Password' and 'Confirm Password' must match");
+                    $this->zain_registration_form();
+                }
+                else{                
+                    $this->set_mem_info($name,$email,$gender,$dob,$password,$mobile,$client_id);
+                }
             }
-            else{                
-                $this->set_mem_info($name,$email,$gender,$dob,$password,$mobile,$client_id);
+            else{
+                $this->session->set_flashdata('errors',validation_errors());
+                $this->zain_registration_form();
             }
         }
         else{
-            $this->session->set_flashdata('errors',validation_errors());
-            $this->zain_registration_form();
+            redirect('1/zain_sign_in');
         }
     }
 
     // storing all info for db and after successfull activation showing success view and sending mail and sms
     public function set_mem_info($name = '',$email = '',$gender = '',$dob = '',$password = '',$mobile = 0,$client_id = 0){
 
-        $mem_client_info = $this->get_client_info($mobile);
 
-        //  customers info 
-        $id = $this->get_mem_client_id($client_id);
-        if($id){
+        $is_pre_activated = $this->Zain_model->check_if_activated($mobile); //before submitting/resubmitting form we'll have to see if submitted already
 
-            $customers['id']            = $id;
-            $customers['first_name']    = $name; //form
-            $customers['email']         = $email; //form
-            $customers['mobile_number'] = $mobile; //form
-            $customers['password']      = md5($password); //form
-            $customers['create_date']   = date('Y-m-d h:i:s'); //we'll take datetime now
-            // $customers['freeday']       = $line->free_monthly_visits;// from account types get free days
-            $customers['client_id']     = $mem_client_info['clientId']; //from new_db
-            $customers['gender']        = $gender; //form
-            $customers['birthday']      = date('Y-m-d H:i:s',strtotime($dob)); //form
-            
-            // wallet info
-            $wallet['customers_id']     = $id;
-            $wallet['creation_date']    = date("Y-m-d H:i:s");
+        if(!$is_pre_activated){
 
+            $mem_client_info = $this->get_client_info($mobile);
 
-            // account info
-            $default_expiry = '2058-12-31 23:59:59';
-            $accountRecord['create_date']      = date("Y-m-d H:i:s"); //datetime now
-            $accountRecord['expiry_date']      = date('Y-m-d H:i:s',strtotime($default_expiry)); //have to define either 2058 or some other
-            $accountRecord['active']           = 1; //self activated
-            $accountRecord['id']               = $id; //
-            $accountRecord['customers_id']     = $id; // from customers table
-            $accountRecord['account_types_id'] = $mem_client_info['accountTypeId']; //from privilege type
+            //  customers info 
+            $id = $this->get_mem_client_id($client_id);
+            if($id){
+
+                $customers['id']            = $id;
+                $customers['first_name']    = $name; //form
+                $customers['email']         = $email; //form
+                $customers['mobile_number'] = $mobile; //form
+                $customers['password']      = md5($password); //form
+                $customers['create_date']   = date('Y-m-d h:i:s'); //we'll take datetime now
+                // $customers['freeday']       = $line->free_monthly_visits;// from account types get free days
+                $customers['client_id']     = $mem_client_info['clientId']; //from new_db
+                $customers['gender']        = $gender; //form
+                $customers['birthday']      = date('Y-m-d H:i:s',strtotime($dob)); //form
+                
+                // wallet info
+                $wallet['customers_id']     = $id;
+                $wallet['creation_date']    = date("Y-m-d H:i:s");
 
 
-            // mobile info
-            $mobile_data['customers_id']             = $id;
-            $mobile_data['mobile']                   = $mobile;//form
+                // account info
+                $default_expiry = '2058-12-31 23:59:59';
+                $accountRecord['create_date']      = date("Y-m-d H:i:s"); //datetime now
+                $accountRecord['expiry_date']      = date('Y-m-d H:i:s',strtotime($default_expiry)); //have to define either 2058 or some other
+                $accountRecord['active']           = 1; //self activated
+                $accountRecord['id']               = $id; //
+                $accountRecord['customers_id']     = $id; // from customers table
+                $accountRecord['account_types_id'] = $mem_client_info['accountTypeId']; //from privilege type
 
-            // address info
-            $address['customers_id']            = $id;
 
-            // car info
-            $carRecord['account_id']            = $id;
+                // mobile info
+                $mobile_data['customers_id']             = $id;
+                $mobile_data['mobile']                   = $mobile;//form
 
-            // active
-            $activeRecord['customers_id']       = $id;
-            $activeRecord['parkpass_details']   = 1;
+                // address info
+                $address['customers_id']            = $id;
 
-            $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile_data,$address,$activeRecord,$carRecord);
-            if($mem_info_saved){
-                // log
-                // success view
-                $this->show_200('https://park-pass.com/buyPackage');
-                // send email (verification + welcome)
-                // send sms (welcome)
+                // car info
+                $carRecord['account_id']            = $id;
+
+                // active
+                $activeRecord['customers_id']       = $id;
+                $activeRecord['parkpass_details']   = 1;
+
+                $mem_info_saved = $this->Zain_model->save_mem_info($customers,$wallet,$accountRecord,$mobile_data,$address,$activeRecord,$carRecord);
+                if($mem_info_saved){
+                    // log
+                    // success view
+                    $this->show_200('https://park-pass.com/buyPackage');
+                    // send email (verification + welcome)
+                    // send sms (welcome)
+                }
+                else{
+                    // log problem
+                    $this->show_404('zain_activate');
+                }
             }
             else{
                 // log problem
@@ -357,9 +406,13 @@ class Zain extends CI_Controller{
             }
         }
         else{
-            // log problem
-            $this->show_404('zain_activate');
-        }
+            //show sucess with message that your account is already activated
+            $msg_header = 'Account already activated !';
+            $msg_info = 'This number has been assigned a ParkPass membership';
+            $msg_info_p = 'For more information about this please contact us.';
+
+            $this->show_200('https://park-pass.com/buyPackage',$msg_header,$msg_info,$msg_info_p);
+        } 
 
     }
 
@@ -409,6 +462,70 @@ class Zain extends CI_Controller{
         }
     }
 
+    public function success_mail($email = '',$url = '',$mail_view = '',$mail_sub = ''){
+
+         $data['url'] = $url;
+
+        try{
+
+            $mail = new PHPMailer();					
+            $mail->isSMTP();					
+            $mail->Host       = "smtp.gmail.com";
+            $mail->Port       = 587; //you could use port 25, 587, 465 for googlemail					
+            $mail->SMTPAuth   = true; 
+            $mail->SMTPSecure = "tls";  //tls
+            
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+    
+            $mail->Username   = "info@park-pass.com";
+            $mail->Password   = "abcd@0987";
+    
+            $mail->setFrom('info@park-pass.com','Park Point');
+            $mail->addReplyTo('no-reply@park-point.com');
+    
+    
+            $mail->Subject = $mail_sub;
+                
+            $mail->CharSet = 'UTF-8';
+            $mail->isHTML(true);
+            //$mail->SMTPDebug =2;
+    
+            $mail->addAddress($email, $mail_sub);
+            $mail->Body = $this->load->view($mail_view,$data,true);	
+        
+            
+            $mail_response = 0;
+            if(!$mail->send())
+            {
+                $errorMessage = $mail->ErrorInfo;
+                $mail_response = 0;
+            }
+            else
+            {
+                $msg = array('status'=>'success','msg'=>'Email has been sent successfully');
+                $mail_response = 1;
+            }
+            return  $mail_response;				
+        }
+            
+        catch(phpmailerException $e){
+            return  false;
+        }
+    }
+    
+    public function verification_mail(){
+        
+    }
+
+    public function success_msg(){
+
+    } 
 }
 
 ?>

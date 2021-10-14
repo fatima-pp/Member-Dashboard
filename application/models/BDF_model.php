@@ -9,6 +9,21 @@ class BDF_model extends CI_Model{
         $this->load->database();
 	}
 
+    public function log($function_name = '',$function_status='',$info='',$err = ''){
+        $log_data = array(
+            'function_name'=>$function_name,
+            'function_status'=>$function_status,
+            'info'=>json_encode($info),
+            'error'=>serialize($err),
+            'date_time'=>date('Y-m-d H:i:s')
+        );
+
+        $this->db->trans_start();
+            $this->db->insert('application_logs',$log_data);
+        $this->db->trans_complete();
+        return true;
+    }
+
 
     public function sign_in(){
         return true;
@@ -28,19 +43,19 @@ class BDF_model extends CI_Model{
 
     //if registered or not
     public function validate_mobile($mobile_number = ''){
-        $vld_mob_qry = $this->db->select('*')->from('customers c')->join('account a','a.customers_id = c.id')->where(array('mobile_number'=>$mobile_number,'active'=>1))->get();
+        $vld_mob_qry = $this->db->select('*')->from('customers c')->join('account_copy_2021 a','a.customers_id = c.id')->where(array('mobile_number'=>$mobile_number,'active'=>1))->get();
         return ($vld_mob_qry->num_rows() > 0) ? ($vld_mob_qry->row_array()) : 0;
     }
 
     public function get_dept($email_phone = '',$srch_param = ''){
-        $dept_qry = $this->db->select('*')->from('customers c')->join('account a','a.customers_id = c.id')->join('organization o','o.customers_id = c.id')->where(array($srch_param=>$email_phone,'active'=>1))->get();
+        $dept_qry = $this->db->select('*')->from('customers c')->join('account_copy_2021 a','a.customers_id = c.id')->join('organization o','o.customers_id = c.id')->where(array($srch_param=>$email_phone,'active'=>1))->get();
         return ($dept_qry->num_rows() > 0) ? ($dept_qry->row_array()) : 0;
     }
 
     public function get_memberships($email_phone = '',$srch_param = ''){
         $membership_qry = $this->db->select('*,a.id as account_id')
                             ->from('customers c')
-                            ->join('account a','a.customers_id = c.id')
+                            ->join('account_copy_2021 a','a.customers_id = c.id')
                             ->join('account_types at','at.id = a.account_types_id')
                             ->where(array($srch_param=>$email_phone,'a.active'=>1,'at.at_isActive'=>1))->get();
 
@@ -61,14 +76,34 @@ class BDF_model extends CI_Model{
         return ($val_loc_qry->num_rows() > 0) ? ($val_loc_qry->row_array()) : 0;
     }
 
+    public function random_bytes_gen(){
+        try {
+            $string = openssl_random_pseudo_bytes(10);
+            // $string = random_bytes(10);
+        } catch (TypeError $e) {
+            // Well, it's an integer, so this IS unexpected.
+            die("An unexpected error has occurred"); 
+        } catch (Error $e) {
+            // This is also unexpected because 32 is a reasonable integer.
+            die("An unexpected error has occurred");
+        } catch (Exception $e) {
+            // If you get this message, the CSPRNG failed hard.
+            die("Could not generate a random string. Is our OS secure?");
+        }
+
+        return(bin2hex($string));
+    }
 
     public function gen_tkn_fgt_pass($email = '',$account_info){
-        $token = bin2hex(random_bytes(10));
+        // $rndm_num = rand();
+
+        $token = $this->random_bytes_gen();
+
         $this->db->trans_start();
             $pass_res_data = array(
                 'account_id' => $account_info['customers_id'],
                 'email' => $email, 
-                'created_at' => date('Y-m-d h:i:s'),     
+                'created_at' => date('Y-m-d h:i:s'), 
                 'token'=> $token
             );
             $this->db->insert('pass_reset', $pass_res_data);
@@ -170,7 +205,7 @@ class BDF_model extends CI_Model{
     }
 
     public function acc_active($account_id = ''){
-        $acc_qry = $this->db->get_where('account',array('id'=>$account_id,'active'=>1));
+        $acc_qry = $this->db->get_where('account_copy_2021',array('id'=>$account_id,'active'=>1));
         return $acc_qry;
     }
 
@@ -243,32 +278,32 @@ class BDF_model extends CI_Model{
             parking.annual_rent,
             reserved_space.account_id,
             customers.*,
-            account.*,organization.*,
+            account_copy_2021.*,organization.*,
             annualDiscount.discount,
             account_cars.*,subs_transactions.*,amt.membership_type_id,mt.*,
 
-            (CASE WHEN renew_discount != 0 AND account.`years_active` != 0 THEN ((annual_rent) - (amount)) 
+            (CASE WHEN renew_discount != 0 AND account_copy_2021.`years_active` != 0 THEN ((annual_rent) - (amount)) 
                 WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_amount_received,
             
-            (CASE WHEN renew_discount != 0 AND account.`years_active` != 0 THEN  (((annual_rent) - (amount))/(annual_rent))*100 
+            (CASE WHEN renew_discount != 0 AND account_copy_2021.`years_active` != 0 THEN  (((annual_rent) - (amount))/(annual_rent))*100 
                 WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_percentage_received,
 
-            (CASE WHEN renew_discount != 0  AND account.`years_active` != 0 THEN (amount - (amount * discount))
+            (CASE WHEN renew_discount != 0  AND account_copy_2021.`years_active` != 0 THEN (amount - (amount * discount))
                 WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_amount,
                 
-            (CASE WHEN renew_discount != 0 AND account.`years_active` != 0 THEN  (((annual_rent) - (amount))/(annual_rent))*100 
+            (CASE WHEN renew_discount != 0 AND account_copy_2021.`years_active` != 0 THEN  (((annual_rent) - (amount))/(annual_rent))*100 
                 WHEN membership_type_id = 5 THEN 'cardiac' ELSE 0 END )AS discount_percentage
         ");
 
         $this->db->from('park_space');
         $this->db->join('reserved_space', 'reserved_space.`parkspace_id` = park_space.`id`', 'inner');
         $this->db->join('customers', 'customers.id = reserved_space.`account_id`', 'inner');
-        $this->db->join('account', 'account.id = customers.id', 'inner');
+        $this->db->join('account_copy_2021', 'account_copy_2021.id = customers.id', 'inner');
         $this->db->join('parking', 'parking.id = park_space.`Parking_id`', 'inner');
         $this->db->join('annualDiscount', 'parking.id = annualDiscount.`parking_id`', 'inner');
-        $this->db->join('account_cars', 'account_cars.account_id = account.id', 'left');
-        $this->db->join('organization', 'organization.customers_id = account.id', 'left');
-        $this->db->join('subs_transactions', 'subs_transactions.customers_id = account.id', 'inner');
+        $this->db->join('account_cars', 'account_cars.account_id = account_copy_2021.id', 'left');
+        $this->db->join('organization', 'organization.customers_id = account_copy_2021.id', 'left');
+        $this->db->join('subs_transactions', 'subs_transactions.customers_id = account_copy_2021.id', 'inner');
         
         $this->db->join('accounts_membership_types amt', 'amt.account_id = customers.id', 'left');
         $this->db->join('membership_types mt', 'mt.id = amt.membership_type_id', 'left');
@@ -338,8 +373,8 @@ class BDF_model extends CI_Model{
 			subs_transactions.invoice_date,
 			subs_transactions.payment_mode,
 			subs_transactions.`id` AS invoice_number,
-			account.create_date,
-			account.expiry_date,
+			account_copy_2021.create_date,
+			account_copy_2021.expiry_date,
 			account_cars.car_plate_number');
 		}
 		else{
@@ -355,13 +390,13 @@ class BDF_model extends CI_Model{
 			membership_transactions.invoice_date,
 			membership_transactions.payment_mode,
 			membership_transactions.`invoice_id` AS invoice_number,
-			account.create_date,
-			account.expiry_date,
+			account_copy_2021.create_date,
+			account_copy_2021.expiry_date,
 			account_cars.car_plate_number');
 		}
 
 		$this->db->from('customers');
-		$this->db->join('account', 'account.customers_id = customers.id ', 'INNER');
+		$this->db->join('account_copy_2021', 'account_copy_2021.customers_id = customers.id ', 'INNER');
 		$this->db->join('organization', 'organization.customers_id = customers.id', 'INNER');
 		
 		if (strpos($id, 'BDF') !== false) {

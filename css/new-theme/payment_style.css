@@ -1,0 +1,471 @@
+
+    :root{
+        font-family: "Montserrat", sans-serif;
+    }
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        
+        --dark-blue:#054168;
+        color: #fff;
+        
+        max-height: 100vh;
+        font-family: "Montserrat", sans-serif;
+    }
+
+    .container{
+        display: flex;  
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    p{
+        font-size: 32px;
+    }
+
+    .top-section{
+        padding:2rem;
+    }
+
+    .title h1{
+        color: var(--dark-blue);
+        font-weight: 700;
+        font-size: 5rem;
+    }
+    .title span{
+        display: block;
+    }
+
+    .search-bar{
+        margin:8rem auto;
+        position: relative;
+    }
+
+
+    input[type="text"]{
+        border-radius: 1.1rem;
+        height: 6rem;
+        width: 57rem;
+        border: .25rem #054168 solid;
+        padding: 1rem 4.75rem;
+        font-size: 2rem;
+        font-weight: 400;
+        font-family: "Montserrat", sans-serif;
+    }
+
+    input[type="text"]:focus{
+       outline: none;
+    }
+    
+    ::placeholder {
+        color: var(--dark-blue);
+        opacity: 1; /* Firefox */
+    }
+    
+    :-ms-input-placeholder { /* Internet Explorer 10-11 */
+        color:  var(--dark-blue);
+    }
+    
+    ::-ms-input-placeholder { /* Microsoft Edge */
+        color:  var(--dark-blue);
+    }
+    
+    
+    .ticket-dtls{
+        background-color: var(--dark-blue);
+        padding: 4rem;
+    }
+    
+    .ticket-dtls h3,.payment > h3,.amount h3{
+        font-size: 3rem;
+    }
+    
+    .ticket-dtls h3 > span{
+        font-weight: 400 !important;
+    }
+    
+    .ticket-info  .label{
+        font-weight: 400;
+        margin: 0;
+    }
+    .ticket-info .info{
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .ticket-car,.time-dtls,.extra-time-dtls,.radios,.payment-row{
+        display: flex;
+        justify-content: space-between;
+    }
+    .ticket-car,.time-dtls,.extra-time-dtls{
+        margin: 4rem auto 2rem;
+    }
+    
+    /* .time-spent .info > span:nth-child(1):after{ */
+
+    .time-spent .info > span,
+    .extra-time-spent .info > span{
+        background-color: #fff;
+        color: #054168;
+        padding: 15px 10px;
+        border-radius: 15px;
+    }
+    /* .time-spent .info > span#hours{
+        content: '02'; 
+        background-color: #fff;
+        color: #054168;
+        padding: 15px 10px;
+        border-radius: 15px;
+    }
+    .time-spent .info > span#minutes{
+        content: '45';
+        background-color: #fff;
+        color: #054168;
+        padding: 15px 10px;
+        border-radius: 15px;
+    }
+    .time-spent .info > span#seconds{
+        content: '00';
+        background-color: #fff;
+        color: #054168;
+        padding: 15px 10px;
+        border-radius: 15px;
+    } */
+    .time-spent .info,
+    .extra-time-spent .info{
+        margin-top: 16px;
+    }
+
+    .hide{
+        display: none !important;
+    }
+
+    .payment,.no-ticket-found{
+        padding: 4rem;
+        color: var(--dark-blue);
+    }
+    
+    .payment > h3,.amount h3{
+        font-weight: 500;
+    }
+    
+    .radios .input-type input{
+        color: var(--dark-blue);
+    }
+    .input-type{        
+        display: flex;
+        align-items: center;
+    }
+
+    .input-type:nth-child(1){        
+        margin-right: 12rem;
+    }
+    
+    input[type="radio"]{
+        margin-right: 1.5rem;
+        height: 30px;
+        width: 30px;
+    }
+    
+    .input-type label{
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        font-size: 2.25rem;
+        font-weight: 600;
+        justify-content:start;
+    }
+    .card-icon{
+        width: 6rem;
+    }
+    
+    .payment-row{
+        margin-top: 6rem;
+    }
+    .payment-row button{
+        width: 28rem;
+        border-radius: 84px;
+        font-weight: 700;
+        font-size: 3.5rem;
+        font-family: "Montserrat", sans-serif;
+        color: #fff;
+        border: 1px solid #D3564C;
+        background: #D3564C;
+        height: 125px;
+    }
+    .amount h3{
+        font-size: 2.5rem;
+        margin: 0;
+    }
+    
+    .amount h3:nth-child(2){
+        font-size: 3rem;
+        font-weight: 700;
+    }
+    .search-icon{
+        position: absolute;
+        top: 1.4rem;
+        z-index: 2;
+        left: 51.25rem;
+        width: 3.5rem;
+    }
+
+    .search-icon:hover{
+        cursor: pointer;
+    }
+
+    .logo-holder{
+        margin-top:2rem;
+    }
+    .logo-holder > a{
+        display: flex;
+        justify-content: flex-end;
+        padding-right: 2.75rem;
+    }
+
+    .logo-holder img{
+        height:11.1rem;
+        width: 16.75rem;
+    }
+    
+    .ticket_not_found{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 45vh;
+    }
+
+
+    .ticket_not_found .svg-holder{
+        margin-bottom: 1em;
+    }
+
+    .ticket_not_found .ticket_err_msg {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 1.5em;
+    }
+
+    .ticket_not_found .ticket_err_msg p{
+        font-size: 2.25em;
+    }
+
+    .ticket_not_found p{
+        font-size: 5rem;
+        margin: 0;
+        padding: 0;
+        font-weight: 600; 
+        color:var(--dark-blue);       
+    }
+
+    .svg-holder img{
+        width: 10em;
+        height: 10em;
+    }
+
+    .ticket_not_found.hide{
+        display: none !important;
+    }
+    .peach-font{
+        color: #D3564C;
+        font-size: 2.95rem;
+        margin: 0;
+        padding: 0;
+    }
+    .no-ticket-found h1{
+        margin: 0;
+        padding: 0;
+    }
+    .img-text{
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .text-only{
+        width: 50vw;
+    }
+
+    .msg{
+        font-size: 2rem;
+    }
+    #arrow-up{
+        position: absolute;
+        left: 36rem;
+        height: 350px;
+    }
+
+    footer{
+        background-color: #212121;
+        display: flex;
+        justify-content: space-evenly;
+        padding: 4rem 3rem 1rem;
+        margin-top: auto !important;
+    }
+
+    footer .logo-section{
+        display: flex;
+        flex-direction: column;
+        /* align-items: center; */
+        justify-content: space-between;
+    }
+
+    footer .logo-section ul{
+        display: flex;
+        justify-content: space-between;
+    }
+
+    footer .logo-section img{
+        height: 8rem;
+        width: 8rem;
+    }
+
+    footer .logo-section ul a{
+        color: #fff;
+    }
+    footer ul>li{
+        list-style-type: none;
+        text-align: center;
+        font-size: 1.6rem;
+    } 
+    footer ul>li:nth-child(1){
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    
+@media screen and (min-width: 1023px){
+
+    p{
+        font-size: 12px;
+        /* font-size: 16px; */
+    }
+
+    .body-holder{
+        display: flex;
+    }
+
+    .logo-holder {
+        margin-top: 1.25rem;
+    }
+
+    .logo-holder img {
+        height: 2.75rem;
+        width: 18rem;
+    }
+
+    .top-section {
+        padding: 0 5rem;
+    }
+
+    .title h1 {
+        font-size: 1.75rem;
+    }
+
+    .search-bar {
+        margin: 3.25rem auto;
+    }
+
+    .search-icon {
+        top: 0.9rem;
+        left: 31.25rem;
+        width: 1.75rem;
+    }
+
+    input[type="text"]{
+        height: 3.5rem;
+        width: 35rem;
+        border: .25rem #054168 solid;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 400;
+        font-family: "Montserrat", sans-serif;
+    }
+
+    .ticket_not_found{
+        height: 90vh;
+    }
+
+    
+    .ticket_not_found .ticket_err_msg p{
+        font-size: 2em;
+    }
+
+    .ticket_not_found p{
+        font-size: 2.5rem;
+        margin: 0;
+        padding: 0;
+        font-weight: 600; 
+        color:var(--dark-blue);       
+    }
+
+    #arrow-up {
+        left: 30rem;
+        height: 240px;
+    }
+
+    .ticket-dtls {
+        margin-left: 5rem;
+        width: 32rem;
+        padding:1.75rem;
+    }
+
+    .ticket-dtls h3,.payment > h3,.amount h3{
+        font-size: 1.5rem;
+    }
+
+    .ticket-car, .time-dtls, .extra-time-dtls {
+        margin: 2rem auto;
+    }
+
+    .ticket-dtls .ticket-info p {
+        font-size: 1rem;
+    } 
+
+    .payment, .no-ticket-found {
+        padding: 2rem 5rem;
+    }
+
+    .peach-font{
+        font-size: 2rem;
+    }
+
+    .msg{
+        font-size: 1.75rem;
+    }
+
+    input[type="radio"] {
+        height: 15px;
+        width: 15px;
+    }
+
+    .card-icon {
+        width: 2.25rem;
+    }
+
+    .input-type label {
+        font-size: 1.5rem;
+    }
+
+    .payment-row {
+        margin-top: 3rem;
+        align-items: center;
+    }
+
+    .amount h3:nth-child(2) {
+        font-size: 1.5rem;
+    }
+
+    .payment-row button {
+        width: 12rem;
+        font-size: 1.75rem;
+        height: 70px;
+    }
+    footer{
+        padding-top: 2rem;
+    }
+    
+}

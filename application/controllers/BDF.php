@@ -14,45 +14,46 @@ class BDF extends CI_Controller{
         $this->load->library('session');
     }
 
+    public function bdf_log($function_name = '',$function_status='',$info='',$err = ''){
+        $is_logged = $this->BDF_model->log($function_name,$function_status,$info,$err);
+        return $is_logged;
+    }
+
     public function sign_in(){
-        $this->load->view('sign_in');
+        $this->load->view('new_views/sign_in');
+    }
+
+    public function sign_out(){
+        $this->session->sess_destroy();
+		redirect(base_url('sign_in'));
     }
 
     public function sign_in_email($email = ''){
         $is_email = strpos($email,'@');
         if($is_email){
             $data['email'] = hex2bin($email);
-            $this->load->view('sign_in',$data);
+            $this->load->view('new_views/sign_in',$data);
         }
         else{
+            $this->bdf_log('sign_in_email','else section','invalid email format','no errro - invalid email format ');
             redirect('sign_in');
         }
     }
 
     public function dont_have_pass(){
-        $this->load->view('dont_have_pass_1');
+        $this->load->view('new_views/dont_have_pass_1');
     }
 
-    // public function dont_have_pass_2(){
-    //     $this->load->view('dont_have_pass_2');
-    // }
-
     public function forgot_pass_1(){
-        $this->load->view('forgot_pass_1');
+        $this->load->view('new_views/forgot_pass_1');
     }
 
     public function forgot_pass_2($mobile = '' ){
         $session_mobile = $this->session->userdata('mobile');
         $data['mobile'] = (isset($mobile) && $mobile !== '') ? $mobile : ((  $session_mobile !== null && $session_mobile !== '') ? $session_mobile : null);
-        $this->load->view('forgot_pass_2',$data);
+        $this->load->view('new_views/forgot_pass_2',$data);
     }
-
-    // public function forgot_pass_3(){
-    //     $this->load->view('forgot_pass_3');
-    // }
-
     
-
     public function index()
     {
         print_r(phpinfo());
@@ -75,13 +76,13 @@ class BDF extends CI_Controller{
         else{
             $this->form_validation->set_rules('email_phone','Email','valid_email',array('valid_email'=>'Please enter a valid email address'));
         }
-
         $this->form_validation->set_rules('password','Password','required',array('required'=>'Please enter a Password'));
 
 
 		if($this->form_validation->run() === FALSE){
             $this->session->set_flashdata('errors',validation_errors());
-            $this->load->view('sign_in');
+            $this->bdf_log('sign_in_sub','form validation failed',validation_errors(),'validation failed');
+            $this->load->view('new_views/sign_in');
 		}
         else{
             if($is_email){
@@ -89,45 +90,58 @@ class BDF extends CI_Controller{
                 //registered and active
                 $is_registered = $this->BDF_model->validate_email($email_phone);
                 if($is_registered){
+                    $this->bdf_log('sign_in_sub','if sec',$is_registered,'member is registered');
+
                     $this->session->set_userdata('member_info',$is_registered);
 
                     $is_verified = $this->BDF_model->verify_email($email_phone);
                     if($is_verified){
+                        $this->bdf_log('sign_in_sub','if sec',$is_verified,"member's email is verified");
+
                         // authenticate email and password 
                         $is_auth = $this->auth_crd($email_phone,$password,'email');
                         if($is_auth){
+                            $this->bdf_log('sign_in_sub','if sec',$is_auth,"member is authenticated");
+
                             // print_r('success');
                             //get account data and show dashboard
                             $data['customer'] = $is_registered;
                             $data['dept'] = $this->get_dept($email_phone,'email');
                             
                             $this->session->set_userdata('dept',$data['dept']);
+                            $this->bdf_log('sign_in_sub','loading dashboard',$data['memberships'],"member info");
 
-                            $this->load->view('dashboard',$data);    
+                            $this->load->view('new_views/dashboard',$data);    
                         }else{
+                           $this->bdf_log('sign_in_sub','if sec',$is_auth,"member is not authenticated");
                            $this->session->set_flashdata('errors','Password Incorrect');
-                           $this->load->view('sign_in');
+                           $this->load->view('new_views/sign_in');
                         }
                     }
                     else{
+                        $this->bdf_log('sign_in_sub','else sec',$is_verified,"member's email isn't verified");
                         $this->session->set_flashdata('errors','Please ensure that Email is verified');
-                        $this->load->view('sign_in');
+                        $this->load->view('new_views/sign_in');
                     }
                 }
                 else{
+                    $this->bdf_log('sign_in_sub','else sec',$is_registered,"member isn't registered");
                     $this->session->set_flashdata('errors','Please ensure that this Email is registered');
-                    $this->load->view('sign_in');
+                    $this->load->view('new_views/sign_in');
                 }
             }
             else{
                 $is_mob_reg = $this->BDF_model->validate_mobile($email_phone);
 
                 if($is_mob_reg){
+                    $this->bdf_log('sign_in_sub','if sec',$is_mob_reg,"mobile number is registered");
+
                     $this->session->set_userdata('member_info',$is_mob_reg);
 
                     // authenticate email and password 
                     $is_auth = $this->auth_crd($email_phone,$password,'mobile_number',$is_mob_reg['customers_id']);
                     if($is_auth){
+                        $this->bdf_log('sign_in_sub','if sec',$is_auth,"member is authenticated");
                         // print_r('success');   
                         //get account data and show dashboard
                         $data['customer'] = $is_mob_reg;
@@ -135,18 +149,22 @@ class BDF extends CI_Controller{
 
                         $this->session->set_userdata('dept',$data['dept']);
 
+                        // in dashboard card should not show renew if already renewed rather something else
                         $data['memberships'] = $this->get_memberships($email_phone,'mobile_number');
-                        $this->load->view('dashboard',$data);     
+                        $this->bdf_log('sign_in_sub','loading dashboard',$data['memberships'],"member info");
+                        $this->load->view('new_views/dashboard',$data);     
 
                     }
                     else{
+                        $this->bdf_log('sign_in_sub','else sec',$is_auth,"member is not authenticated");
                         $this->session->set_flashdata('errors','Password Incorrect');
-                        $this->load->view('sign_in');
+                        $this->load->view('new_views/sign_in');
                     }
                 }
                 else{
+                    $this->bdf_log('sign_in_sub','else sec',$is_mob_reg,"mobile number isn't registered");
                     $this->session->set_flashdata('errors','Please ensure that this number is registered');
-                    $this->load->view('sign_in');
+                    $this->load->view('new_views/sign_in');
                 }
             }
         }
@@ -157,9 +175,11 @@ class BDF extends CI_Controller{
         return $dept;
     }
 
+    // getting membership cards to display on dashboard
     public function get_memberships($email_phone = '',$srch_param = 'mobile_number'){
         $memberships = $this->BDF_model->get_memberships($email_phone,$srch_param);
 
+        $this->bdf_log('get_memberships','got member info',$memberships,'getting member info');
         $membership_dtls = array(
             'membership_name'=>'',
             'location'=>'',
@@ -179,7 +199,7 @@ class BDF extends CI_Controller{
             $valet_loc_dtls = $this->get_valet_locs($membership['client_id'],$membership['account_types_id']);
             $sub_loc_dtls = $this->get_sub_locs($account_id);
 
-            $location = ($membership['status'] == 'valet') ? ($valet_loc_dtls['parking_id'] .'-'.$valet_loc_dtls['location_id']) : $sub_loc_dtls['parking_name'];
+            $location = ($membership['status'] == 'valet') ? 'All Valet Parking Locations' : $sub_loc_dtls['parking_name'];
 
             //get decsription from account_type
             $description = $membership['description'];
@@ -205,13 +225,15 @@ class BDF extends CI_Controller{
         return $mems;
     }
 
+    //retrieving and displaying renewal form     
+    // if already renewed show receipt or success messsage that already renewed
     public function renew($account_id = ''){
         // print_r($account_id);
         $data = [] ;
         
-        $current_mem = $this->BDF_model->get_current_membership($account_id);
+        $current_mem  = $this->BDF_model->get_current_membership($account_id);
         $upgraded_mem = $this->BDF_model->get_upgraded_membership($current_mem['parking_id'],$current_mem['annual_rent']);
-        $dscnt_dtls  = $this->BDF_model->get_dscnt_dtls($account_id);
+        $dscnt_dtls   = $this->BDF_model->get_dscnt_dtls($account_id);
 
         $this->session->set_userdata('current_membership',$current_mem);
 
@@ -220,12 +242,18 @@ class BDF extends CI_Controller{
             $data['upgraded_mem'] = $upgraded_mem;
             $data['dscnt_dtls'] = $dscnt_dtls;
 
+            $this->bdf_log('renew','got current member',$current_mem,'getting current member info');
+            $this->bdf_log('renew','got upgraded member info',$upgraded_mem,'getting upgraded member info');
+            $this->bdf_log('renew','got discount details',$dscnt_dtls,'getting discount details');
+
+
             $renewal_types = explode(",",$current_mem['renewal_types']);//1,3,6
             $membership_types = $this->BDF_model->get_membership_types($renewal_types);
             
             $data['renewal_types'] = $membership_types;
 
             $years_active = $dscnt_dtls['years_active'];
+            ++$years_active; //INCREMENTING EACH YEAR
 
             $discounts = explode(",",$dscnt_dtls['discount']);
             $disc = $discounts[$years_active];//0.7
@@ -236,8 +264,18 @@ class BDF extends CI_Controller{
             $data['disc'] = $disc;
             $data['disc_perc'] = $disc_perc;
             $data['disc_amt'] = $disc_amt;
+            $this->load->view('new_views/renew',$data);
         }
-        $this->load->view('renew',$data);
+        else{
+
+            $this->bdf_log('renew','something went while ( retrieving and displaying renewal form )wrong redirecting to sign in page',$current_mem,'error');
+            $this->bdf_log('renew','something went while ( retrieving and displaying renewal form )wrong redirecting to sign in page ',$upgraded_mem,'error');
+            $this->bdf_log('renew','something went while ( retrieving and displaying renewal form )wrong redirecting to sign in page',$dscnt_dtls,'error');
+
+
+            //show appropriate error and then redirect
+            $this->load->view('new_views/sign_in');
+        }
     }
 
     public function get_valet_locs($client_id = 0,$account_type_id = 0){
@@ -251,7 +289,7 @@ class BDF extends CI_Controller{
         return $sub_loc_res;
     }
 
-    //
+    // reseting forgotten password through email
     public function forgot_password(){
         $email = $this->input->post('email');
 
@@ -264,17 +302,21 @@ class BDF extends CI_Controller{
 
         if($this->form_validation->run() === FALSE){
             $this->session->set_flashdata('errors',validation_errors());
-            $this->load->view('forgot_pass_1');
+            $this->load->view('new_views/forgot_pass_1');
 		}
         else{
             //registered and active
             $is_registered = $this->BDF_model->validate_email($email);
             
             if($is_registered){
+                $this->bdf_log('forgot_password','if sec',$is_registered,'member is registered');
+                
                 //verify
                 $is_verified = $this->BDF_model->verify_email($email);
                 
                 if($is_verified){
+                    $this->bdf_log('forgot_password','if sec',$is_verified,'member is verified');
+
                     //register the token
                     $token = $this->BDF_model->gen_tkn_fgt_pass($email,$is_registered); 
                     $data['token'] = $token;
@@ -283,18 +325,27 @@ class BDF extends CI_Controller{
                     $url = base_url() ."gen_new_pass/" .$token;
                     $data['url'] = $url;
                     
-                    $is_mail_sent = $this->send_mail($email,$url,'forgot_pass_mail','ParkPoint - Account Password Reset');
+                    $this->bdf_log('forgot_password','generated token',$url,'token generated for member status');
+
+                    $is_mail_sent = $this->send_mail($email,$url,'reset_password_mail','ParkPoint - Account Password Reset'); //new mail design as per BDF
+                    // $is_mail_sent = $this->send_mail($email,$url,'forgot_pass_mail','ParkPoint - Account Password Reset');
                     $data['is_mail_sent'] = $is_mail_sent;
-                    $this->load->view('forgot_pass_1',$data);                
+
+                    $this->bdf_log('forgot_password','sending mail and loading view',$is_mail_sent,'mail sent member status');
+
+                    $this->load->view('new_views/forgot_pass_1',$data);                
                 }
                 else{
+                    $this->bdf_log('forgot_password','else sec',$is_verified,'member is not verified');
                     $data['not_verified'] = $is_verified;
-                    $this->load->view('forgot_pass_1',$data);
+                    $this->load->view('new_views/forgot_pass_1',$data);
                 }
             }
             else{
+                $this->bdf_log('forgot_password','else sec',$is_registered,"member isn't registered");
+                
                 $data['not_registered'] = $is_registered;
-                $this->load->view('forgot_pass_1',$data);
+                $this->load->view('new_views/forgot_pass_1',$data);
             }
         }
 
@@ -303,7 +354,9 @@ class BDF extends CI_Controller{
     public function send_mail($email = '',$url = '',$mail_view = '',$mail_sub = ''){
         $data['url'] = $url;
 
+        
         try{
+            $this->bdf_log('send_mail','try sec',$email .'-'.$url .'-'.$mail_view .'-'.$mail_sub .'-','sending email');
 
             $mail = new PHPMailer();					
             $mail->isSMTP();					
@@ -325,10 +378,7 @@ class BDF extends CI_Controller{
     
             $mail->setFrom('info@park-pass.com','Park Point');
             $mail->addReplyTo('no-reply@park-point.com');
-    
-            
-            //$mail->AddBCC($admin_mail,"Admin");
-            //$mail->AddBCC($accounts_email,"Accounts");
+
     
             $mail->Subject = $mail_sub;
                 
@@ -351,10 +401,13 @@ class BDF extends CI_Controller{
                 $msg = array('status'=>'success','msg'=>'Email has been sent successfully');
                 $mail_response = 1;
             }
+            $this->bdf_log('send_mail','try sec',$mail->send() .'-'.$mail_response ,'attempted sending email');
+
             return  $mail_response;				
         }
             
         catch(phpmailerException $e){
+            $this->bdf_log('send_mail','catch sec',$mail->send() .'-'.$mail_response ,'attempted sending email/failure');
             return  false;
         }
     }
@@ -363,17 +416,21 @@ class BDF extends CI_Controller{
         if(isset($token)){
             $is_valid = $this->BDF_model->validate_token($token);
             if($is_valid){
+                $this->bdf_log('create_new_pass','if sec validation',$is_valid,'token is valid');
                 $data['account_id'] =  $is_valid['account_id'];
                 //display view for generating new password
-                $this->load->view('forgot_pass_3',$data);
+                $this->load->view('new_views/forgot_pass_3',$data);
             }
             else{
+                $this->bdf_log('create_new_pass','else sec validation',$is_valid,'token is not valid - displaying link expired view');
                 $data['title'] = 'Link Expired';
-                $this->load->view('expired_link',$data);
+                $this->load->view('new_views/expired_link',$data);
             }
         }
     }
 
+    // till here logged
+    // deleting the token ans setting the new password
     public function set_new_pass(){
         $is_changed = false;
 
@@ -383,23 +440,27 @@ class BDF extends CI_Controller{
         $confirm_password = $this->input->post('confirm_password');
         
         //verify and validate password and confirm password
-        $this->form_validation->set_rules('password','Password','required|exact_length[6]|regex_match[/^(?=.+\w)(?=.*[@#$%^&+=_!*-]).{6}$/]',array('required'=>'Please enter your new password','exact_length'=>'Password must be 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one special character(@#$%^&+=_)'));
+        $this->form_validation->set_rules('password','Password','required|min_length[6]|regex_match[/^(?=.+\w)(?=.+\d)(?=.*[@#$%^&+=_]).{6}$/]',array('required'=>'Please enter your new password','exact_length'=>'Password must be 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one character(@#$%^&+=_)'));
         $this->form_validation->set_rules('confirm_password','Confirm Password','required|matches[password]',array('matches'=>'Passwords do not match'));
 
         if($this->form_validation->run() === FALSE){
             $this->session->set_flashdata('errors',validation_errors());
-            $this->load->view('forgot_pass_2');
+            $this->load->view('new_views/forgot_pass_2');
 		}
         else{
             //delete the token
             $dlt_tkn = $this->BDF_model->dlt_tkn($account_id);
 
+            $this->bdf_log('set_new_pass','else sec deleting the token',$dlt_tkn,'token is deleted - moving toward changing the password');
+
             //change the password of this account
             $is_changed = $this->BDF_model->change_password($account_id,$password);
             $data['is_changed'] = $is_changed;
 
+            $this->bdf_log('set_new_pass','else sec setting new pass',$dlt_tkn,'token is deleted and password is changed');
+
             //show success msg with taking to login page option
-            $this->load->view('forgot_pass_3',$data);
+            $this->load->view('new_views/forgot_pass_3',$data);
 
         }
     }
@@ -488,7 +549,7 @@ class BDF extends CI_Controller{
             $is_otp_verified = $this->compare_otp($otp,$otp_sent);
             if($is_otp_verified){
                 $this->session->set_flashdata('errors',"OTP incorrect. {$otp_sent} , {$otp}");
-                $this->load->view('forgot_pass_2');
+                $this->load->view('new_views/forgot_pass_2');
             }
 
             else{
@@ -502,7 +563,7 @@ class BDF extends CI_Controller{
                     $this->create_new_pass($token);
                 }
                 else{
-                    $this->load->view('sign_in');
+                    $this->load->view('new_views/sign_in');
                 }
             }
         }
@@ -525,7 +586,7 @@ class BDF extends CI_Controller{
 
         if($this->form_validation->run() === FALSE){
             $this->session->set_flashdata('errors',validation_errors());
-            $this->load->view('dont_have_pass_1');
+            $this->load->view('new_views/dont_have_pass_1');
 		}
         else{
             $is_mob_reg = $this->BDF_model->validate_mobile($phone);
@@ -533,23 +594,24 @@ class BDF extends CI_Controller{
                 //compare otp
                 $is_otp_verified = $this->compare_otp($otp,$otp_sent);
                 if($is_otp_verified){
-                    $this->load->view('dont_have_pass_2');
+                    $this->load->view('new_views/dont_have_pass_2');
                 }
                 else{
                     $this->session->set_flashdata('errors',"OTP incorrect. {$otp_sent} , {$otp}");
-                    $this->load->view('dont_have_pass_1');
+                    $this->load->view('new_views/dont_have_pass_1');
                 }                
             }
             else{
                 $this->session->set_flashdata('errors','Please ensure that this number is registered');
-                $this->load->view('dont_have_pass_1');
+                $this->load->view('new_views/dont_have_pass_1');
             }  
         }
 
     }
 
     public function create_account(){
-        $vrfy_mail_view = 'verify_mail';
+        // $vrfy_mail_view = 'verify_mail';
+        $vrfy_mail_view = 'email_ver';
         $mobile = $this->session->userdata('user_phone');
         
         if(isset($mobile)){
@@ -563,12 +625,12 @@ class BDF extends CI_Controller{
             $this->form_validation->set_rules('email','Email','required',array('required'=>'Please enter your email address'));
 
             //verify and validate password and confirm password
-            $this->form_validation->set_rules('password','Password','required|min_length[6]|regex_match[/^(?=.+\w)(?=.*[@#$%^&+=_]).{6}$/]',array('required'=>'Please enter your new password','exact_length'=>'Password must be 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one character(@#$%^&+=_)'));
+            $this->form_validation->set_rules('password','Password','required|exact_length[6]|regex_match[/^(?=.+\w)(?=.*[@#$%^&+=_]).{6}$/]',array('required'=>'Please enter your new password','exact_length'=>'Password must be 6 characters','regex_match'=>'Password must contain alphabets,numbers and atleast one character(@#$%^&+=_)'));
             $this->form_validation->set_rules('confirm_password','Confirm Password','required|matches[password]',array('matches'=>'Passwords do not match'));
 
             if($this->form_validation->run() === FALSE){
                 $this->session->set_flashdata('errors',validation_errors());
-                $this->load->view('dont_have_pass_2');
+                $this->load->view('new_views/dont_have_pass_2');
             }
             else{
                 //find account to register new token for resseting under it
@@ -585,10 +647,10 @@ class BDF extends CI_Controller{
                     $email_register = $this->BDF_model->reg_email($account_info['customers_id'],$email);
                     $data['pass_created'] = $pass_created;
 
-                    $this->load->view('dont_have_pass_2',$data);
+                    $this->load->view('new_views/dont_have_pass_2',$data);
                 }
                 else{
-                    $this->load->view('sign_in');
+                    $this->load->view('new_views/sign_in');
                 } 
             }
         }
@@ -608,15 +670,15 @@ class BDF extends CI_Controller{
             if($is_verified){                
                 $data['is_verified'] = $is_verified ;
                 $data['user_email'] = bin2hex($email) ;
-                $this->load->view('email_verified',$data);
+                $this->load->view('new_views/email_verified',$data);
             }else{
                 $data['title'] = 'Invalid Token';
-                $this->load->view('expired_link',$data);
+                $this->load->view('new_views/expired_link',$data);
             }
         }
         else{
             $data['title'] = 'Invalid Token';
-            $this->load->view('expired_link',$data);
+            $this->load->view('new_views/expired_link',$data);
         }
     }
 
@@ -637,6 +699,7 @@ class BDF extends CI_Controller{
 		echo json_encode($records->result());
 	}
 
+    //retrieving all values from renewal form and setting the session to use these values
     public function renew_bdf(){
         
         $parking_area = $this->input->post('parking_area');
@@ -673,8 +736,16 @@ class BDF extends CI_Controller{
 
         $this->session->set_userdata('parkingLot',$parking_area);
 
-        $this->reviewBDFRenewApplication($park_type ,$location_id ,$membership_type_id ,$account_id,$first_name,$last_name= '',$email ='',$mobile,$cpr ,$gender,$dept,$prof,$org,
+        $is_review_set = $this->reviewBDFRenewApplication($park_type ,$location_id ,$membership_type_id ,$account_id,$first_name,$last_name= '',$email ='',$mobile,$cpr ,$gender,$dept,$prof,$org,
         $parking_area ,$parking_space ,$old_parking ,$old_parkspace ,$valid_from,$valid_until,$amt_payable,$payment_method);
+
+        if($is_review_set){
+            echo json_encode(true);
+        }
+        else{
+            // log and ahow error
+            echo json_encode(false);
+        }
  
     }
 
@@ -700,9 +771,11 @@ class BDF extends CI_Controller{
             $department      		  = $department;
             $profession      		  = $profession;
             
+            // from form
             $new_parking_id	  	      = $new_parking; //id
             $new_park_space_id        = $new_parkspace;
             
+            // when retrieving member data for renewwal after login
             $existing_parking_id	  = $old_parking; //id
             $existing_park_space_id   = $old_parkspace;
 
@@ -734,10 +807,10 @@ class BDF extends CI_Controller{
             $setting_session_data = $this->set_session_data($account_id,$emailInput,$nameInput,$lastNameInput,$gender,'1',$cpr,$department,$profession,$organization,$parking,$park_space,$parkTypeSelect,$from_date,$to_date,$amount,$location_id,$payment_method);
 
             if($setting_session_data){
-                echo json_encode(true);
+                return true;
             }
             else{
-                redirect('renew/'.$account_id);
+                redirect('new_bdf_renew/'.$account_id);
             }
         }
 
@@ -918,6 +991,7 @@ class BDF extends CI_Controller{
         }
 
 
+        // not logged this and above 
         public function createInvoiceNumber($location_id = 19) {
             $location_id = $this->session->userdata('location_id');
             $result      = $this->BDF_model->generateInvoiceNumber($location_id);
@@ -967,13 +1041,17 @@ class BDF extends CI_Controller{
                 $data['parkSpace']     = $this->session->userdata('parkSpace');
             }
             
-            $data['invoiceNumber'] = $invoiceNumber;
-                
+            $data['invoiceNumber'] = $invoiceNumber;                
             $data['session_id']  = $this->curlCrediMax($invoiceNumber, $price);
-            $this->load->view('payTest', $data);
+
+            $this->bdf_log('paymentProcess','taken all values ,proceeding to credit payment',$data,'proceedign to credit payment function');
+
+            $this->load->view('new_views/payTest', $data);
         }
 
         public function curlCrediMax($orderId = 'TES123', $orderAmount = '0.000') {
+            $this->bdf_log('curlCrediMax','credit payment gateway',$orderId.' - '.$orderAmount,'starting to load payemnt gateway');
+            
             $operation            = 'CREATE_CHECKOUT_SESSION';
             $password             = '73ed433cfcb390ce623bf20b9a2789e5';
             $interaction          = 'https://park-pass.com/paymentSuccess';
@@ -1007,6 +1085,10 @@ class BDF extends CI_Controller{
             $sessionVersion = explode('=', $resultArray[4]);
             array_push($sessionId, $sessionVersion[1]);
             $this->session->set_userdata('sessionVersion', $sessionVersion[1]);
+
+            $this->bdf_log('curlCrediMax','post credit payment gateway',$orderId.' - '.$orderAmount.' - '.$sessionId,'after credit payment');
+            
+
             // Final result
             return $sessionId;
 
@@ -1020,12 +1102,14 @@ class BDF extends CI_Controller{
 
             $location_name  = $this->BDF_model->get_location_name($location_id);
             $data['location_name']  = $location_name['name'];
+            $location_name = $this->session->userdata('location_name');
 
             if($sessionType == '1') {
+                $this->bdf_log('paymentSuccess','renewal - payment success',$data,'success renewal');
                 if($location_id == 19){
-                    redirect(base_url('BDF/submitBDFRenewal'));
+                    $this->submitBDFRenewal();
                 }else{
-                    //show error
+                    //either show error or redirect to nonBDFRenewal
                     redirect(base_url('BDF/BDFApply/submitNonBDFRenewal'));
                 }
             }
@@ -1035,9 +1119,10 @@ class BDF extends CI_Controller{
 
             $sessionInfo = $this->session->userdata('account_id');
             $membershipGenerated = $this->session->userdata('account_id');
+            $location_id = $this->session->userdata('location_id');
 
             if(!isset($sessionInfo)) {
-                redirect('renew/'.$membershipGenerated);
+                redirect('new_bdf_renew/'.$membershipGenerated);
             }
 
             $parkTypeSelect = $this->session->userdata('parkTypeSelect');
@@ -1047,8 +1132,7 @@ class BDF extends CI_Controller{
             $customers_info['email']         = $this->session->userdata('emailInput');
             $customers_info['mobile_number'] = $this->session->userdata('mobile');
             $customers_info['gender']        = $this->session->userdata('gender');
-            $customers_info['client_id']	   = 16;
-
+            $customers_info['client_id']	   = 16; //must be retrieved from db once and used later,cannot use static
             $customers_info = $this->BDF_model->getCustomerInformation($membershipGenerated);
 
             $account['id']               = $membershipGenerated;
@@ -1090,7 +1174,7 @@ class BDF extends CI_Controller{
                 'status' => 1
             );  
 
-            $renewal_date = '2021-01-01 00:00:00';
+            $renewal_date = $this->session->userdata('startDate');
 
             $renewal_sales_data = array(
                 'invoice_date' => date('Y-m-d H:i:s'),
@@ -1103,11 +1187,18 @@ class BDF extends CI_Controller{
                 'renewal_type'=> $parkTypeSelect,
                 'renewal_date'=> date('Y-m-d H:i:s', strtotime($renewal_date))
             );
+
+            $this->bdf_log('submitBDFRenewal','renewing member in accounts table',$accountArray,'db update for accounts table');
+            $this->bdf_log('submitBDFRenewal','renewing member in renewal_sales',$renewal_sales_data,'db update for renewal_sales table');
+            $this->bdf_log('submitBDFRenewal','renewing member in parking job order',$parking_job_order,'db update for parking_job_orders table');
+            $this->bdf_log('submitBDFRenewal','renewing member in subs_transactions',$subs_transactions,'db update for  subs_transactions table');
+            $this->bdf_log('submitBDFRenewal','renewing member in customers',$customers_info,'db update for customer table');
+
             
             $this->db->trans_start();
                 $this->db->set($accountArray);
                 $this->db->where('id', $membershipGenerated);
-                $this->db->update('account');
+                $this->db->update('account_copy_2021');
                 
                 $this->db->set($subs_transactions);
                 $this->db->where('id', $invoiceNumber);
@@ -1126,8 +1217,9 @@ class BDF extends CI_Controller{
                 $this->db->insert('parking_job_orders',$parking_job_order);
                 $this->db->insert('renewal_sales',$renewal_sales_data);
 
-            $this->db->trans_complete();
+            $is_db_up = $this->db->trans_complete();
 
+            $this->bdf_log('submitBDFRenewal','renewed member - db status',$is_db_up,'db updated with renewal data');
         
             $reserved_space['parkspace_id'] = $this->db->get_where('reserved_space', array('account_id' => $account['id']));
             $reserved_spaceDetails = $reserved_space['parkspace_id']->result();
@@ -1137,10 +1229,8 @@ class BDF extends CI_Controller{
             $member_vehicle = $this->db->get_where('account_cars', array('account_id' => $account['id']))->result_array();
 
             //email configuration and design for member
-                $this->load->library('email');              
                 $admin_email = 'bdf.member@park-point.com';			                
                 $accounts_email = 'accounts3@park-point.com';			                
-                $this->load->library('mail');
                 
                 $customer_mail = $customers_info['email']; 
 
@@ -1155,6 +1245,33 @@ class BDF extends CI_Controller{
                 $data['id']             = $account['id'];
                 $data['cars']           = $member_vehicle;
                 $data['price']          = $numbered_price;
+
+
+              $location_details[] = (object) array('id' => '19', 'name' => 'Bahrain Defence Force Royal Medical Services Hospital','a_name'=>'الخدمات الطبية الملكية التابعة لقوة دفاع البحرين');
+              $location_details[] = (object) array('id' => '22', 'name' => 'Bahrain Bay Development','a_name'=>'خليج البحرين للتطوير');
+              $location_details[] = (object) array('id' => '29', 'name' => 'The District','a_name'=>'ذا ديستريكت');
+              $location_details[] = (object) array('id' => '32', 'name' => 'Eskan','a_name'=>'إسكان');
+       
+				$location_name = '';
+				$location_a_name = '';
+				
+				
+				foreach($location_details as $ld){
+					$x = $ld->id;
+					$y = $ld->name;
+
+					$is = ($x == $location_id) ? 'yes' : 'no';
+					$location_name =  ($ld->id == $location_id) ? $ld->name : $location_name;
+					$location_a_name =  ($ld->id == $location_id) ? $ld->a_name : $location_a_name;
+				}
+
+				$data['location_name']   = $location_name;
+				$data['location_a_name'] = $location_a_name;
+				$data['location_a_id']   = $location_id;
+
+                $this->bdf_log('submitBDFRenewal','location details set - sending email',$data,'email will be sent');
+
+                // $this->send_mail()
 
                 try{
 
@@ -1190,7 +1307,7 @@ class BDF extends CI_Controller{
 
                     foreach($emails as $email){
                         $mail->addAddress($customer_mail, 'BDF Membership – Renewal Application');
-                        $mail->Body = $this->load->view('BDF/renewal_mail',$data,true);				
+                        $mail->Body = $this->load->view('new_views/renewal_mail_new',$data,true);				
                     }
                     
                     $mail_response = 1 ;
@@ -1204,11 +1321,15 @@ class BDF extends CI_Controller{
                         $msg=array('status'=>'success','msg'=>'Email has been sent successfully');
                         $mail_response = 1;
                     }
+
+                    $this->bdf_log('submitBDFRenewal','try block',$mail->send().'-'.$mail_response,'in mail sending section');
+
                     echo true;				
                 }
                 
                 catch(phpmailerException $e)
                 {
+                    $this->bdf_log('submitBDFRenewal','catch block',$mail->send().'-'.$mail_response,'caught an error in mail sending section');
                     echo false;
                 }
             //SMS send
@@ -1218,11 +1339,15 @@ class BDF extends CI_Controller{
             
 
             if (!empty($member_number) && $member_number != '0') {
-                sendMsg($member_number, "Dear Member".",\n\n"."Welcome to ParkPoint."."\n\n"."your membership is now confirmed, we have sent you an email with details of the membership."."\n\n"."Thank you,"."\n"."ParkPoint");
+                $this->bdf_log('submitBDFRenewal','sending sms - commented for testing',$member_number,$member_number);
+                // sendMsg($member_number, "Dear Member".",\n\n"."Welcome to ParkPoint."."\n\n"."your membership is now confirmed, we have sent you an email with details of the membership."."\n\n"."Thank you,"."\n"."ParkPoint");
             }
             $this->session->set_userdata('app_status', 'Renew');
 
-            redirect(base_url('receipt'));
+            $this->bdf_log('submitBDFRenewal','email and sms sent redirecting to receipt',$member_number,$member_number);
+
+            $this->receipt();
+            // redirect(base_url('receipt'));
         }
 
         public function receipt() {
@@ -1230,13 +1355,6 @@ class BDF extends CI_Controller{
             $data['membershipId'] = $this->session->userdata('account_id');
             $data['location_id']  = $this->session->userdata('location_id');
             $data['renew'] 	      = $this->session->userdata('app_status');
-            
-            if($data['membershipId'] == "" || $data['membershipId'] == null){
-                //show error
-                $data['membershipId'] = 'BBD03210100';
-                $data['location_id']  = 22;
-                $data['renew'] 	      = 'Renew';
-            }
 
             $location_id             = $this->session->userdata('location_id');
             
@@ -1245,6 +1363,7 @@ class BDF extends CI_Controller{
             
             if(!isset($data['membershipId'])) {
                 //show error
+                $this->bdf_log('receipt','if section',$data,'- error occured membership id not set');
                 redirect('new/'.$location_id);
             };
 
@@ -1257,7 +1376,9 @@ class BDF extends CI_Controller{
             if($admin != 'AliX&^%$'){
                 $this->session->sess_destroy();
             }
-            $this->load->view('receipt', $data);
+
+            $this->bdf_log('receipt','end fo fucntion',$data,'successfully renewed - now showing receipt view');
+            $this->load->view('new_views/receipt_new', $data);
         }
 
 }

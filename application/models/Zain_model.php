@@ -6,7 +6,7 @@ class Zain_model extends CI_Model{
     public function __construct()
     {
         parent::__construct();
-        $this->load->database('new');
+        $this->load->database('new');   
         // $New_db = $this->load->database('new', TRUE);
 	}
 
@@ -54,11 +54,13 @@ class Zain_model extends CI_Model{
 
 
     public function get_client_info($client_id = 0){
+        $new_db = $this->load->database('new', TRUE);
+
         $act_stat = 'active';
         if($client_id !== null && $client_id !== 0){
             // expirydate has to be checked 
 
-            $query = $this->db->select('*')->from('client')->where(array('id'=>$client_id,'status'=>$act_stat))->get();
+            $query = $new_db->select('*')->from('client')->where(array('id'=>$client_id,'status'=>$act_stat))->get();
             $response = $this->exec_qry($query,'get_client_info');
             if($response){ //which is actual data,not false or 0 (no rows)
                 return $response;
@@ -273,7 +275,7 @@ class Zain_model extends CI_Model{
             $account_type = $this->get_new_account_type($mobile);
             if($account_type){
                 $account_type_id = $account_type['accountTypeId'];
-                $qry = $default_db->select('*')->from('customers c')->join('account a','a.customers_id = c.id')->where(array('a.account_types_id'=>$account_type_id,'a.active'=>1))->get();
+                $qry = $default_db->select('*')->from('customers c')->join('account a','a.customers_id = c.id')->where(array('a.account_types_id'=>$account_type_id,'a.active'=>1,'mobile_number'=>$mobile))->get();
                 $response = $this->exec_qry($qry,'check_if_activated');
                 
                 if($response){

@@ -1,0 +1,191 @@
+        :root{
+            font-family: "Montserrat", sans-serif;
+        }
+        body{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            
+            --dark-blue:#054168;
+            color:var(--dark-blue);
+
+            max-height: 100vh;
+            font-family: "Montserrat", sans-serif;
+        }
+
+        p{
+            font-size: 32px;
+            margin: 0;
+            padding: 0;
+            font-weight: 600;
+        }
+
+        .success-container{
+            padding: 0 2em !important;
+        }
+        
+        .error-container{
+            padding: 0 2em !important;
+        }
+
+        
+        .logo-holder-success{
+            margin:2rem auto;
+        }
+        .logo-holder-success > a{
+            display: flex;
+            justify-content: flex-end;
+            /* padding-right: 2rem; */
+        }
+
+        .logo-holder-success img{
+            /* height:11.1rem; */
+            width: 8rem;
+        }
+
+        main{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 75vh;
+        }
+
+        #leave_on_time{
+            font-weight: 500;
+        }
+
+        #leave_on_time > span{
+            text-decoration: underline;
+            font-weight: 700;
+        }
+
+        .svg-holder{
+            margin-bottom: 1em;
+        }
+
+        .btn-holder{
+            display: flex;
+            margin-top: 5em;
+            justify-content: space-between;
+        }
+
+        .btn-holder:first-child{
+            margin-right: .75em;
+        }
+
+        .btn-holder img{
+            margin-left:1em;
+        }
+
+        .outlined-btn,.filled-btn{
+            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            padding: .75em 2em;
+            border: 2px solid #054168;
+            font-family: 'Montserrat';
+            font-weight: 700;
+            justify-content: space-between;
+            font-size: 1em;
+        }
+
+        .outlined-btn{
+            color: var(--dark-blue);
+            background-color: #fff;
+        }
+        .filled-btn{
+            color: #fff;
+            background-color: var(--dark-blue);
+        }
+
+        a.outlined-btn{
+            text-decoration: none;
+            color:var(--dark-blue);
+        }
+
+     /* receipt styles */
+        .container {
+            color: #000;
+            display: hide;
+            background:#fff;
+        }
+        .container  .receipt{
+            padding: 0 2em !important;
+        }
+
+        
+        .logo-holder-receipt{
+            margin:2rem auto;
+        }
+        .logo-holder-receipt > a{
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 2rem;
+        }
+
+        .logo-holder-receipt img{
+            /* height:11.1rem; */
+            width: 8rem;
+        }
+
+        .receipt h1{
+            font-size: 1.75rem;    
+        }
+
+        .receipt#receipt_number{
+            color: #373737;
+            font-weight:300;
+        }
+
+        .receipt .section-heading{
+            margin-bottom: 1em;
+            margin-top: 2em;
+        }
+
+        .receipt .parking-name,.terminal,
+        .ticket_number,.car_number,.time_in,.time_out,.stay,
+        .discount,.payment_method,.vat,.total{
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .receipt div > h6 {
+            margin: 0 0 .5em 0;
+            font-size: 1em;
+        }
+
+        .receipt div > h6:first-child {
+            font-weight: 300;
+        }
+
+        .receipt hr{
+            margin-top: 1em;
+        }
+
+        .receipt .total > h6:first-child{
+            font-weight: bold;
+        }
+
+        .svg-holder{
+            margin-bottom: 1em;
+        }
+
+        .payment_err_msg {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1.5em;
+        }
+
+        .payment_err_msg p{
+            font-size: 1em;
+
+        }
+        .error-container .btn-holder{
+            display: flex;
+            margin-top: 5em;
+            justify-content: center;
+        }
+
+
